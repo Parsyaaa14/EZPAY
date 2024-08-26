@@ -4,8 +4,14 @@ import { DataSource } from 'typeorm';
 import { ObjectLiteral } from 'typeorm/common/ObjectLiteral';
 import { ConfigService } from '@nestjs/config';
 import { User } from '#/users/entities/user.entity';
+import { levelMasterData3} from './data/user';
 import { levelMasterData } from './data/role';
+import { levelMasterData2 } from './data/kategori';
 import { Role } from '#/role/entities/role.entity';
+import { Kategori } from '#/kategori/entities/kategori.entity';
+import { Produk } from '#/produk/entities/produk.entity';
+import { levelMasterData4 } from './data/produk';
+
 // import { userMasterData } from './data/user';
 
 @Injectable()
@@ -48,6 +54,9 @@ export class SeederService implements OnApplicationBootstrap {
 
   async seeder() {
     await this.insertIfNotExist(Role, levelMasterData);
+    await this.insertIfNotExist(Kategori, levelMasterData2);
+    await this.insertIfNotExist(User, levelMasterData3);
+    await this.insertIfNotExist(Produk, levelMasterData4)
     // await this.insertIfNotExist(Cities, cityMasterData)
   }
 

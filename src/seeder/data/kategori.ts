@@ -1,5 +1,5 @@
-export const levelMasterData = [
-    { nama: 'Makanan' },
-    { nama: 'Minuman' },
-    { nama: 'Es Krim' },
-  ];
+export const levelMasterData2 = [
+  { nama: 'Makanan' },
+  { nama: 'Minuman' },
+  { nama: 'Es Krim' },
+];

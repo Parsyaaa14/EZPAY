@@ -6,16 +6,34 @@ import {
   DeleteDateColumn,
   VersionColumn,
   CreateDateColumn,
-  
 } from 'typeorm';
 
 @Entity()
-export class Kategori {
+export class Produk {
   @PrimaryGeneratedColumn('uuid')
-  id_kategori: string;
+  id_produk: string;
 
-  @Column({ nullable: true })
-  nama: string;
+  @Column({ type: 'varchar', length: 100 })
+  nama_produk: string;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  harga_produk: number;
+
+  @Column({ type: 'int'})
+  stok: number;
+
+  @Column({ type: 'text'})
+  gambar_produk: string;
+
+  @Column({ type: 'varchar', length: 60})
+  kode_produk: string;
+
+  @Column({ type: 'varchar', length: 60})
+  satuan_produk: string;
+
+  @Column({ type: 'boolean' })
+  status_produk: boolean;
+
 
   @CreateDateColumn({
     type: 'timestamp with time zone',

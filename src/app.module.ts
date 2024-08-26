@@ -11,6 +11,7 @@ import * as pino from 'pino';
 import { SeederModule } from '#/seeder/seeder.module';
 import { RoleModule } from './role/role.module';
 import { KategoriModule } from './kategori/kategori.module';
+import { ProdukModule } from './produk/produk.module';
 
 @Module({
   imports: [
@@ -100,6 +101,7 @@ import { KategoriModule } from './kategori/kategori.module';
     HealthModule,
     RoleModule,
     KategoriModule,
+    ProdukModule,
   ],
 })
 export class AppModule {}
