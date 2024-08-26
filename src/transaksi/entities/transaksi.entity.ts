@@ -6,22 +6,25 @@ import {
   DeleteDateColumn,
   VersionColumn,
   CreateDateColumn,
-  OneToMany,
-  
+  ManyToOne,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
 
-import { Produk } from '../../produk/entities/produk.entity';
+import { User } from '../../users/entities/user.entity';
+import { Pesanan } from '../../pesanan/entities/pesanan.entity';
 
 @Entity()
-export class Kategori {
+export class Transaksi {
   @PrimaryGeneratedColumn('uuid')
-  id_kategori: string;
+  id_transaksi: string;
 
-  @OneToMany(() => Produk, (produk) => produk.kategori)
-  produk: Produk[];
+  @ManyToOne(() => User, (user) => user.transaksi)
+  user?: User;
 
-  @Column({ nullable: true })
-  nama: string;
+  @OneToOne(() => Pesanan, (pesanan) => pesanan.transaksi)
+  @JoinColumn()
+  pesanan?: Pesanan;
 
   @CreateDateColumn({
     type: 'timestamp with time zone',

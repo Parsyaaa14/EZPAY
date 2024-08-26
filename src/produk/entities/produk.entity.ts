@@ -6,12 +6,22 @@ import {
   DeleteDateColumn,
   VersionColumn,
   CreateDateColumn,
+  ManyToOne,
 } from 'typeorm';
+
+import { Kategori } from '../../kategori/entities/kategori.entity';
+import { User } from '../../users/entities/user.entity';
 
 @Entity()
 export class Produk {
   @PrimaryGeneratedColumn('uuid')
   id_produk: string;
+
+  @ManyToOne(() => Kategori, (kategori) => kategori.produk)
+  kategori?: Kategori;
+
+  @ManyToOne(() => User, (user) => user.produk)
+  user?: User;
 
   @Column({ type: 'varchar', length: 100 })
   nama_produk: string;

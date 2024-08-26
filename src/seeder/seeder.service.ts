@@ -10,7 +10,9 @@ import { levelMasterData2 } from './data/kategori';
 import { Role } from '#/role/entities/role.entity';
 import { Kategori } from '#/kategori/entities/kategori.entity';
 import { Produk } from '#/produk/entities/produk.entity';
+import { Pesanan } from '#/pesanan/entities/pesanan.entity';
 import { levelMasterData4 } from './data/produk';
+import { levelMasterData5 } from './data/pesanan';
 
 // import { userMasterData } from './data/user';
 
@@ -57,6 +59,8 @@ export class SeederService implements OnApplicationBootstrap {
     await this.insertIfNotExist(Kategori, levelMasterData2);
     await this.insertIfNotExist(User, levelMasterData3);
     await this.insertIfNotExist(Produk, levelMasterData4)
+    await this.insertIfNotExist(Pesanan, levelMasterData5)
+
     // await this.insertIfNotExist(Cities, cityMasterData)
   }
 

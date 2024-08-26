@@ -7,21 +7,35 @@ import {
   VersionColumn,
   CreateDateColumn,
   ManyToOne,
+  OneToMany,
 } from 'typeorm';
 
 import { Role } from '../../role/entities/role.entity';
+import { Produk } from '../../produk/entities/produk.entity';
+import { Pesanan } from '../../pesanan/entities/pesanan.entity';
+import { Transaksi } from '../../transaksi/entities/transaksi.entity';
 
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id_user: string;
+  
+  @ManyToOne(() => Role, (role) => role.user)
+  role: Role;
+
+  @OneToMany(() => Produk, (produk) => produk.user)
+  produk: Produk[];
+
+  @OneToMany(() => Pesanan, (pesanan) => pesanan.user)
+  pesanan: Pesanan[];
+
+  @OneToMany(() => Transaksi, (transaksi) => transaksi.user)
+  transaksi: Transaksi[];
 
   @Column({ length: 50 })
   nama: string;
 
-  @ManyToOne(() => Role, (role) => role.user)
-  role: Role;
   
   @Column({ length: 50 })
   password: string;

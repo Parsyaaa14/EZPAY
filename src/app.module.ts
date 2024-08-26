@@ -12,6 +12,8 @@ import { SeederModule } from '#/seeder/seeder.module';
 import { RoleModule } from './role/role.module';
 import { KategoriModule } from './kategori/kategori.module';
 import { ProdukModule } from './produk/produk.module';
+import { PesananModule } from './pesanan/pesanan.module';
+import { TransaksiModule } from './transaksi/transaksi.module';
 
 @Module({
   imports: [
@@ -102,6 +104,8 @@ import { ProdukModule } from './produk/produk.module';
     RoleModule,
     KategoriModule,
     ProdukModule,
+    PesananModule,
+    TransaksiModule,
   ],
 })
 export class AppModule {}
