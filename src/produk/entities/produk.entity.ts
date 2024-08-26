@@ -7,10 +7,12 @@ import {
   VersionColumn,
   CreateDateColumn,
   ManyToOne,
+  OneToMany,
 } from 'typeorm';
 
 import { Kategori } from '../../kategori/entities/kategori.entity';
 import { User } from '../../users/entities/user.entity';
+import { Toko } from '#/toko/entities/toko.entity';
 
 @Entity()
 export class Produk {
@@ -22,6 +24,9 @@ export class Produk {
 
   @ManyToOne(() => User, (user) => user.produk)
   user?: User;
+
+  @ManyToOne(() => Toko, (toko) => toko.produk)
+  toko: Toko[];
 
   @Column({ type: 'varchar', length: 100 })
   nama_produk: string;

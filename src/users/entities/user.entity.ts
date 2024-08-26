@@ -6,21 +6,21 @@ import {
   DeleteDateColumn,
   VersionColumn,
   CreateDateColumn,
-  ManyToOne,
   OneToMany,
+  ManyToOne,
 } from 'typeorm';
 
 import { Role } from '../../role/entities/role.entity';
 import { Produk } from '../../produk/entities/produk.entity';
 import { Pesanan } from '../../pesanan/entities/pesanan.entity';
 import { Transaksi } from '../../transaksi/entities/transaksi.entity';
-
+import { Toko } from '../../toko/entities/toko.entity';
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id_user: string;
-  
+
   @ManyToOne(() => Role, (role) => role.user)
   role: Role;
 
@@ -33,10 +33,12 @@ export class User {
   @OneToMany(() => Transaksi, (transaksi) => transaksi.user)
   transaksi: Transaksi[];
 
+  @OneToMany(() => Toko, (toko) => toko.user)
+  toko: Toko[];
+
   @Column({ length: 50 })
   nama: string;
 
-  
   @Column({ length: 50 })
   password: string;
 

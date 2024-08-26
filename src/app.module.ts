@@ -14,6 +14,8 @@ import { KategoriModule } from './kategori/kategori.module';
 import { ProdukModule } from './produk/produk.module';
 import { PesananModule } from './pesanan/pesanan.module';
 import { TransaksiModule } from './transaksi/transaksi.module';
+import { TokoModule } from './toko/toko.module';
+import { MetodeTransaksiModule } from './metode_transaksi/metode_transaksi.module';
 
 @Module({
   imports: [
@@ -106,6 +108,8 @@ import { TransaksiModule } from './transaksi/transaksi.module';
     ProdukModule,
     PesananModule,
     TransaksiModule,
+    TokoModule,
+    MetodeTransaksiModule,
   ],
 })
 export class AppModule {}

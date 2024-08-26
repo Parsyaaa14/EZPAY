@@ -29,6 +29,7 @@ export class Transaksi {
   @CreateDateColumn({
     type: 'timestamp with time zone',
     nullable: false,
+    
   })
   createdAt: Date;
 

@@ -8,10 +8,12 @@ import {
   CreateDateColumn,
   ManyToOne,
   OneToOne,
+  JoinColumn,
 } from 'typeorm';
 
 import { User } from '../../users/entities/user.entity';
 import { Transaksi } from '../../transaksi/entities/transaksi.entity';
+import { Toko } from '#/toko/entities/toko.entity';
 
 @Entity()
 export class Pesanan {
@@ -23,6 +25,10 @@ export class Pesanan {
 
   @OneToOne(() => Transaksi, (transaksi) => transaksi.pesanan)
   transaksi: Transaksi;
+
+  @OneToOne(() => Toko, (toko) => toko.pesanan)
+  @JoinColumn()
+  toko?: Toko;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, default: '0' })
   total_harga_pesanan: number;
