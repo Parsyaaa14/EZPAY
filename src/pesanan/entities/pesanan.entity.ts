@@ -9,11 +9,13 @@ import {
   ManyToOne,
   OneToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 
 import { User } from '../../users/entities/user.entity';
 import { Transaksi } from '../../transaksi/entities/transaksi.entity';
 import { Toko } from '#/toko/entities/toko.entity';
+import { DetilProdukPesanan } from '#/detil_produk_pesanan/entities/detil_produk_pesanan.entity';
 
 @Entity()
 export class Pesanan {
@@ -29,6 +31,9 @@ export class Pesanan {
   @OneToOne(() => Toko, (toko) => toko.pesanan)
   @JoinColumn()
   toko?: Toko;
+
+  @OneToMany(() => DetilProdukPesanan, (detilProdukPesanan) => detilProdukPesanan.pesanan)
+  detilProdukPesanan: DetilProdukPesanan[];
 
   @Column({ type: 'decimal', precision: 10, scale: 2, default: '0' })
   total_harga_pesanan: number;

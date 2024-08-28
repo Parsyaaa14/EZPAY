@@ -9,15 +9,22 @@ import {
   ManyToOne,
   OneToOne,
   JoinColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 
 import { User } from '../../users/entities/user.entity';
 import { Pesanan } from '../../pesanan/entities/pesanan.entity';
+import { MetodeTransaksi } from '../../metode_transaksi/entities/metode_transaksi.entity';
 
 @Entity()
 export class Transaksi {
   @PrimaryGeneratedColumn('uuid')
   id_transaksi: string;
+
+  @ManyToMany(() => MetodeTransaksi, (metodeTransaksi) => metodeTransaksi.transaksi)
+  @JoinColumn()
+  metodeTransaksi: MetodeTransaksi[];
 
   @ManyToOne(() => User, (user) => user.transaksi)
   user?: User;

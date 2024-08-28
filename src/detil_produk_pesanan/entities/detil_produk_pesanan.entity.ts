@@ -7,22 +7,28 @@ import {
   VersionColumn,
   CreateDateColumn,
   OneToMany,
-  ManyToMany,
-  
+  ManyToOne,
 } from 'typeorm';
 
-import { Transaksi } from '#/transaksi/entities/transaksi.entity';
+import { Produk } from '../../produk/entities/produk.entity';
+import { Pesanan } from '../../pesanan/entities/pesanan.entity';
 
 @Entity()
-export class MetodeTransaksi {
+export class DetilProdukPesanan {
   @PrimaryGeneratedColumn('uuid')
-  id_metode_transaksi: string;
+  id_detil: string;
 
-  @ManyToMany(() => Transaksi, (transaksi) => transaksi.metodeTransaksi)
-  transaksi: Transaksi[];
+  @ManyToOne(() => Produk, (produk) => produk.detilProdukPesanan)
+  produk: Produk;
 
-  @Column({ nullable: true })
-  nama: string;
+  @ManyToOne(() => Pesanan, (pesanan) => pesanan.detilProdukPesanan)
+  pesanan: Pesanan;
+
+  @Column({ type: 'int', default: 0 })
+  jumlah_produk: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: '0' })
+  total_harga_produk: number;
 
   @CreateDateColumn({
     type: 'timestamp with time zone',
@@ -45,4 +51,3 @@ export class MetodeTransaksi {
   @VersionColumn()
   version: number;
 }
-

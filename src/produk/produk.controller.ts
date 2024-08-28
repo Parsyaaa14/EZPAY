@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, ParseUUIDPipe, HttpStatus } from '@nestjs/common';
 import { ProdukService } from './produk.service';
 import { CreateProdukDto } from './dto/create-produk.dto';
 import { UpdateProdukDto } from './dto/update-produk.dto';
@@ -8,27 +8,55 @@ export class ProdukController {
   constructor(private readonly produkService: ProdukService) {}
 
   @Post()
-  create(@Body() createProdukDto: CreateProdukDto) {
-    return this.produkService.create(createProdukDto);
+  async create(@Body() createProdukDto: CreateProdukDto) {
+    return {
+      data: await this.produkService.create(createProdukDto),
+      statusCode: HttpStatus.CREATED,
+      message: 'success',
+    };
   }
 
   @Get()
-  findAll() {
-    return this.produkService.findAll();
+  async findAll() {
+    const [data, count] = await this.produkService.findAll();
+
+    return {
+      data,
+      count,
+      statusCode: HttpStatus.OK,
+      message: 'success',
+    };
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.produkService.findOne(+id);
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return {
+      data: await this.produkService.findOne(id),
+      statusCode: HttpStatus.OK,
+      message: 'success',
+    };
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProdukDto: UpdateProdukDto) {
-    return this.produkService.update(+id, updateProdukDto);
+  @Put(':id')
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateProdukDto: UpdateProdukDto,
+  ) {
+    return {
+      data: await this.produkService.update(id, updateProdukDto),
+      statusCode: HttpStatus.OK,
+      message: 'success',
+    };
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.produkService.remove(+id);
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    await this.produkService.remove(id);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'success',
+    };
   }
 }
+

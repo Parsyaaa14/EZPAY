@@ -1,26 +1,107 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
+import { EntityNotFoundError,Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Role } from './entities/role.entity';
 
 @Injectable()
 export class RoleService {
-  create(createRoleDto: CreateRoleDto) {
-    return 'This action adds a new role';
+
+
+
+  constructor(
+    @InjectRepository(Role)
+    private roleRepository: Repository<Role>,
+  ) {}
+
+  async create(createRoleDto: CreateRoleDto) {
+    const result = await this.roleRepository.insert(createRoleDto);
+
+    return this.roleRepository.findOneOrFail({
+      where: {
+        id_role: result.identifiers[0].id,
+      },
+    });
   }
 
   findAll() {
-    return `This action returns all role`;
+    return this.roleRepository.findAndCount();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} role`;
+  async findOne(id: string) {
+    try {
+      return await this.roleRepository.findOneOrFail({
+        where: {
+          id_role: id,
+        },
+      });
+    } catch (e) {
+      if (e instanceof EntityNotFoundError) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            error: 'Data not found',
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      } else {
+        throw e;
+      }
+    }
   }
 
-  update(id: number, updateRoleDto: UpdateRoleDto) {
-    return `This action updates a #${id} role`;
+  async update(id: string, updateUserDto: UpdateRoleDto) {
+    try {
+      await this.roleRepository.findOneOrFail({
+        where: {
+          id_role: id,
+        },
+      });
+    } catch (e) {
+      if (e instanceof EntityNotFoundError) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            error: 'Data not found',
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      } else {
+        throw e;
+      }
+    }
+
+    await this.roleRepository.update(id, updateUserDto);
+
+    return this.roleRepository.findOneOrFail({
+      where: {
+        id_role: id,
+      },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} role`;
+  async remove(id: string) {
+    try {
+      await this.roleRepository.findOneOrFail({
+        where: {
+          id_role: id,
+        },
+      });
+    } catch (e) {
+      if (e instanceof EntityNotFoundError) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            error: 'Data not found',
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      } else {
+        throw e;
+      }
+    }
+
+    await this.roleRepository.delete(id);
   }
 }

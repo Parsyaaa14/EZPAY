@@ -16,6 +16,8 @@ import { PesananModule } from './pesanan/pesanan.module';
 import { TransaksiModule } from './transaksi/transaksi.module';
 import { TokoModule } from './toko/toko.module';
 import { MetodeTransaksiModule } from './metode_transaksi/metode_transaksi.module';
+import { DetilProdukPesananModule } from './detil_produk_pesanan/detil_produk_pesanan.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -110,6 +112,8 @@ import { MetodeTransaksiModule } from './metode_transaksi/metode_transaksi.modul
     TransaksiModule,
     TokoModule,
     MetodeTransaksiModule,
+    DetilProdukPesananModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

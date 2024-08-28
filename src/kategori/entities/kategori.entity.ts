@@ -19,7 +19,7 @@ export class Kategori {
   @OneToMany(() => Produk, (produk) => produk.kategori)
   produk: Produk[];
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 50,nullable: true})
   nama: string;
 
   @CreateDateColumn({
@@ -36,7 +36,7 @@ export class Kategori {
 
   @DeleteDateColumn({
     type: 'timestamp with time zone',
-    nullable: true,
+    nullable: false,
   })
   deletedAt: Date;
 

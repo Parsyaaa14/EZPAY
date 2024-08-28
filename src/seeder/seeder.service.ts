@@ -3,18 +3,22 @@ import { EntityTarget } from 'typeorm/common/EntityTarget';
 import { DataSource } from 'typeorm';
 import { ObjectLiteral } from 'typeorm/common/ObjectLiteral';
 import { ConfigService } from '@nestjs/config';
-import { User } from '#/users/entities/user.entity';
-import { levelMasterData3} from './data/user';
+// import { User } from '#/users/entities/user.entity';
+// import { levelMasterData3} from './data/user';
 import { levelMasterData } from './data/role';
 import { levelMasterData2 } from './data/kategori';
 import { Role } from '#/role/entities/role.entity';
 import { Kategori } from '#/kategori/entities/kategori.entity';
-import { Produk } from '#/produk/entities/produk.entity';
+// import { Produk } from '#/produk/entities/produk.entity';
 import { Pesanan } from '#/pesanan/entities/pesanan.entity';
 import { Toko } from '#/toko/entities/toko.entity';
-import { levelMasterData4 } from './data/produk';
+// import { levelMasterData4 } from './data/produk';
 import { levelMasterData5 } from './data/pesanan';
 import { levelMasterData6 } from './data/toko';
+import { levelMasterData7 } from './data/metode_transaksi';
+import { MetodeTransaksi } from '#/metode_transaksi/entities/metode_transaksi.entity';
+import { DetilProdukPesanan } from '#/detil_produk_pesanan/entities/detil_produk_pesanan.entity';
+import { levelMasterData8 } from './data/detil_produk_pesanan';
 
 // import { userMasterData } from './data/user';
 
@@ -59,10 +63,12 @@ export class SeederService implements OnApplicationBootstrap {
   async seeder() {
     await this.insertIfNotExist(Role, levelMasterData);
     await this.insertIfNotExist(Kategori, levelMasterData2);
-    await this.insertIfNotExist(User, levelMasterData3);
-    await this.insertIfNotExist(Produk, levelMasterData4)
+    // await this.insertIfNotExist(User, levelMasterData3);
+    // await this.insertIfNotExist(Produk, levelMasterData4)
     await this.insertIfNotExist(Pesanan, levelMasterData5)
     await this.insertIfNotExist(Toko, levelMasterData6)
+    await this.insertIfNotExist(MetodeTransaksi, levelMasterData7)
+    await this.insertIfNotExist(DetilProdukPesanan, levelMasterData8)
 
     // await this.insertIfNotExist(Cities, cityMasterData)
   }

@@ -1,34 +1,64 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, HttpStatus, ParseUUIDPipe } from '@nestjs/common';
 import { KategoriService } from './kategori.service';
 import { CreateKategoriDto } from './dto/create-kategori.dto';
 import { UpdateKategoriDto } from './dto/update-kategori.dto';
+
 
 @Controller('kategori')
 export class KategoriController {
   constructor(private readonly kategoriService: KategoriService) {}
 
   @Post()
-  create(@Body() createKategoriDto: CreateKategoriDto) {
-    return this.kategoriService.create(createKategoriDto);
+  async create(@Body() createKategoriDto: CreateKategoriDto) {
+    return {
+      data: await this.kategoriService.create(createKategoriDto),
+      statusCode: HttpStatus.CREATED,
+      message: 'success',
+    };
   }
 
   @Get()
-  findAll() {
-    return this.kategoriService.findAll();
+  async findAll() {
+    const [data, count] = await this.kategoriService.findAll();
+        return {
+      data,
+      count,
+      statusCode: HttpStatus.OK,
+      message: 'success',
+    };
   }
+
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.kategoriService.findOne(+id);
+  async findOne(@Param('id', ParseUUIDPipe) id: string
+  ){
+    return {
+      data: await this.kategoriService.findOne(id),
+      statusCode: HttpStatus.OK,
+      message: 'success',
+    };
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateKategoriDto: UpdateKategoriDto) {
-    return this.kategoriService.update(+id, updateKategoriDto);
+  @Put(':id')
+  async update(
+   @Param('id', ParseUUIDPipe) id: string,
+   @Body() updateKategoriDto: UpdateKategoriDto 
+  ) {
+    return {
+      data: await this.kategoriService.update(id, updateKategoriDto),
+      statusCode: HttpStatus.OK,
+      message: 'success',
+    };
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.kategoriService.remove(+id);
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    await this.kategoriService.remove(id);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'success',
+    };
   }
 }
+

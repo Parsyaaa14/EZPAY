@@ -13,6 +13,8 @@ import {
 import { Kategori } from '../../kategori/entities/kategori.entity';
 import { User } from '../../users/entities/user.entity';
 import { Toko } from '#/toko/entities/toko.entity';
+import { DetilProdukPesanan } from '#/detil_produk_pesanan/entities/detil_produk_pesanan.entity';
+
 
 @Entity()
 export class Produk {
@@ -21,6 +23,7 @@ export class Produk {
 
   @ManyToOne(() => Kategori, (kategori) => kategori.produk)
   kategori?: Kategori;
+  
 
   @ManyToOne(() => User, (user) => user.produk)
   user?: User;
@@ -28,7 +31,10 @@ export class Produk {
   @ManyToOne(() => Toko, (toko) => toko.produk)
   toko: Toko[];
 
-  @Column({ type: 'varchar', length: 100 })
+  @OneToMany(() => DetilProdukPesanan, (detilProdukPesanan) => detilProdukPesanan.produk)
+  detilProdukPesanan: DetilProdukPesanan[];
+
+  @Column({ type: 'varchar', length: 100, nullable: false})
   nama_produk: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })

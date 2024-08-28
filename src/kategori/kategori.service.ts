@@ -1,26 +1,93 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { CreateKategoriDto } from './dto/create-kategori.dto';
 import { UpdateKategoriDto } from './dto/update-kategori.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, EntityNotFoundError } from 'typeorm';
+import { Kategori } from './entities/kategori.entity';
 
 @Injectable()
 export class KategoriService {
-  create(createKategoriDto: CreateKategoriDto) {
-    return 'This action adds a new kategori';
+
+  constructor(
+    @InjectRepository(Kategori)
+    private kategoriRepository: Repository<Kategori>,
+  ) {}
+  async create(createKategoriDto: CreateKategoriDto) {
+    const result = await this.kategoriRepository.insert(createKategoriDto);
+    return this.kategoriRepository.findOneOrFail({
+      where: {
+        id_kategori: result.identifiers[0].id,
+      }      
+    })
   }
 
   findAll() {
-    return `This action returns all kategori`;
+    return this.kategoriRepository.findAndCount();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} kategori`;
+  async findOne(id: string) {
+    try {
+      return await this.kategoriRepository.findOneOrFail({
+        where: {
+          id_kategori: id,
+        },
+      });
+    } catch (e) {
+      if (e instanceof EntityNotFoundError) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            error: 'Data not found',
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      } else {
+        throw e;
+      }
+    }
   }
 
-  update(id: number, updateKategoriDto: UpdateKategoriDto) {
-    return `This action updates a #${id} kategori`;
+  async update(id: string, updateKategoriDto: UpdateKategoriDto) {
+    try {
+      await this.kategoriRepository.findOneOrFail({
+        where: {
+          id_kategori: id,
+        },
+      });
+    } catch (e) {
+      if (e instanceof EntityNotFoundError) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            error: 'Data not found',
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      } else {
+        throw e;
+      }
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} kategori`;
+  async remove(id: string) {
+    try {
+      await this.kategoriRepository.findOneOrFail({
+        where: {
+          id_kategori: id,
+        },
+  });
+    } catch (e) {
+      if (e instanceof EntityNotFoundError) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            error: 'Data not found',
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      } else {
+        throw e;
+      }
+    }
   }
 }
