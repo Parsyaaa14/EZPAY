@@ -7,7 +7,6 @@ import {
   VersionColumn,
   CreateDateColumn,
   OneToMany,
-  
 } from 'typeorm';
 
 import { Produk } from '../../produk/entities/produk.entity';
