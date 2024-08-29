@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, ParseUUIDPipe, HttpStatus } from '@nestjs/common';
 import { DetilProdukPesananService } from './detil_produk_pesanan.service';
 import { CreateDetilProdukPesananDto } from './dto/create-detil_produk_pesanan.dto';
 import { UpdateDetilProdukPesananDto } from './dto/update-detil_produk_pesanan.dto';
@@ -8,23 +8,45 @@ export class DetilProdukPesananController {
   constructor(private readonly detilProdukPesananService: DetilProdukPesananService) {}
 
   @Post()
-  create(@Body() createDetilProdukPesananDto: CreateDetilProdukPesananDto) {
-    return this.detilProdukPesananService.create(createDetilProdukPesananDto);
+  async create(@Body() CreateDetilProdukPesananDto: CreateDetilProdukPesananDto) {
+    return {
+      data: await this.detilProdukPesananService.create(CreateDetilProdukPesananDto),
+      statusCode: HttpStatus.CREATED,
+      message: 'success',
+    };
   }
 
   @Get()
-  findAll() {
-    return this.detilProdukPesananService.findAll();
+  async findAll() {
+    const [data, count] = await this.detilProdukPesananService.findAll();
+
+    return {
+      data,
+      count,
+      statusCode: HttpStatus.OK,
+      message: 'success',
+    };
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.detilProdukPesananService.findOne(+id);
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return {
+      data: await this.detilProdukPesananService.findOne(id),
+      statusCode: HttpStatus.OK,
+      message: 'success',
+    };
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDetilProdukPesananDto: UpdateDetilProdukPesananDto) {
-    return this.detilProdukPesananService.update(+id, updateDetilProdukPesananDto);
+  @Put(':id')
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateDetilProdukPesananDto: UpdateDetilProdukPesananDto,
+  ) {
+    return {
+      data: await this.detilProdukPesananService.update(id, updateDetilProdukPesananDto),
+      statusCode: HttpStatus.OK,
+      message: 'success',
+    };
   }
 
   @Delete(':id')

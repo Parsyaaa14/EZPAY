@@ -67,7 +67,16 @@ export class KategoriService {
         throw e;
       }
     }
-  }
+  
+
+  await this.kategoriRepository.update(id, updateKategoriDto);
+
+  return this.kategoriRepository.findOneOrFail({
+    where: {
+      id_kategori: id,
+    },
+  });
+}
 
   async remove(id: string) {
     try {
