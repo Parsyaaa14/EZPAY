@@ -36,11 +36,14 @@ export class User {
   @OneToMany(() => Toko, (toko) => toko.user)
   toko: Toko[];
 
-  @Column({ length: 50 })
+  @Column({ type: 'varchar', length: 50 })
   nama: string;
 
   @Column({ length: 50 })
   password: string;
+
+  @Column({ length: 50, nullable: true, unique: true})
+  email: string;
 
   @Column({ length: 25 })
   no_handphone: string;

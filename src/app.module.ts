@@ -19,6 +19,7 @@ import { MetodeTransaksiModule } from './metode_transaksi/metode_transaksi.modul
 import { DetilProdukPesananModule } from './detil_produk_pesanan/detil_produk_pesanan.module';
 import { AuthModule } from './auth/auth.module';
 
+
 @Module({
   imports: [
     LoggerModule.forRoot({
