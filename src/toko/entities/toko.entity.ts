@@ -13,8 +13,8 @@ import {
 } from 'typeorm';
 
 import { User } from '../../users/entities/user.entity';
-import { Produk } from '#/produk/entities/produk.entity';
-import { Pesanan } from '#/pesanan/entities/pesanan.entity';
+import { Produk } from 'src/produk/entities/produk.entity';
+import { Pesanan } from 'src/pesanan/entities/pesanan.entity';
 @Entity()
 export class Toko {
   @PrimaryGeneratedColumn('uuid')

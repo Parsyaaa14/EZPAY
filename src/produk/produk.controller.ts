@@ -1,20 +1,55 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, ParseUUIDPipe, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, ParseUUIDPipe, HttpStatus, UseInterceptors, HttpException, UploadedFile } from '@nestjs/common';
 import { ProdukService } from './produk.service';
 import { CreateProdukDto } from './dto/create-produk.dto';
 import { UpdateProdukDto } from './dto/update-produk.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { extname } from 'path';
+import { diskStorage } from 'multer';
+
+
+
 
 @Controller('produk')
 export class ProdukController {
+  produkRepository: any;
   constructor(private readonly produkService: ProdukService) {}
 
+
   @Post()
-  async create(@Body() createProdukDto: CreateProdukDto) {
-    return {
-      data: await this.produkService.create(createProdukDto),
-      statusCode: HttpStatus.CREATED,
-      message: 'success',
-    };
-  }
+  @UseInterceptors(FileInterceptor('gambar_produk', { 
+    storage: diskStorage({
+      destination: './src/produk/gambar_produk',
+      filename:(req, file, cb) => {
+        const uniqueName = `${Date.now()}${extname(file.originalname)}`;
+        cb(null, uniqueName);
+      },
+    }),
+    fileFilter: (req, file, cb) => {
+      const allowTypes = ['image/png', 'image/jpg', 'image/jpeg'];
+      if (!allowTypes.includes(file.mimetype)) {
+        return cb(new HttpException('invalid file type', HttpStatus.BAD_REQUEST), false);
+      }
+      cb (null, true);
+      },
+      limits: {
+        fileSize: 1024 * 1024 * 5, // maks 5 mb
+      }
+  }))
+  async createProduk(
+    @Body() createProdukDto: CreateProdukDto,
+    @UploadedFile() file: Express.Multer.File,
+  ){
+    try {
+      if(file){
+        createProdukDto.gambar_produk = file.filename;
+      }
+      return await this.produkService.createProduk(createProdukDto);
+    } catch (error) {
+      throw new Error(`error membuat produk : ${error.messege}`);
+      }
+    }
+  
+
 
   @Get()
   async findAll() {
@@ -59,4 +94,3 @@ export class ProdukController {
     };
   }
 }
-

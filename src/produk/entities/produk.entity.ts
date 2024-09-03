@@ -12,8 +12,8 @@ import {
 
 import { Kategori } from '../../kategori/entities/kategori.entity';
 import { User } from '../../users/entities/user.entity';
-import { Toko } from '#/toko/entities/toko.entity';
-import { DetilProdukPesanan } from '#/detil_produk_pesanan/entities/detil_produk_pesanan.entity';
+import { Toko } from 'src/toko/entities/toko.entity';
+import { DetilProdukPesanan } from 'src/detil_produk_pesanan/entities/detil_produk_pesanan.entity';
 
 
 @Entity()
@@ -43,7 +43,7 @@ export class Produk {
   @Column({ type: 'int'})
   stok: number;
 
-  @Column({ type: 'text'})
+  @Column({ type: 'text',nullable: true})
   gambar_produk: string;
 
   @Column({ type: 'varchar', length: 60})
@@ -52,7 +52,7 @@ export class Produk {
   @Column({ type: 'varchar', length: 60})
   satuan_produk: string;
 
-  @Column({ type: 'boolean' })
+  @Column({ type: 'boolean', default:true})
   status_produk: boolean;
 
 

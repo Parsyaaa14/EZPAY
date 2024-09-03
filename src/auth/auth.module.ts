@@ -4,9 +4,10 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
-import { UsersService } from '#/users/users.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '#/users/entities/user.entity';
+import { User } from 'src/users/entities/user.entity';
+import { UsersService } from 'src/users/users.service';
+
 // import { JwtStrategy } from '../jwt.strategy'; // Jika menggunakan JWT strategy
 
 @Module({

@@ -14,8 +14,8 @@ import {
 
 import { User } from '../../users/entities/user.entity';
 import { Transaksi } from '../../transaksi/entities/transaksi.entity';
-import { Toko } from '#/toko/entities/toko.entity';
-import { DetilProdukPesanan } from '#/detil_produk_pesanan/entities/detil_produk_pesanan.entity';
+import { Toko } from 'src/toko/entities/toko.entity';
+import { DetilProdukPesanan } from 'src/detil_produk_pesanan/entities/detil_produk_pesanan.entity';
 
 @Entity()
 export class Pesanan {

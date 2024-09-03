@@ -1,25 +1,40 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException,HttpStatus, NotFoundException } from '@nestjs/common';
 import { CreateProdukDto } from './dto/create-produk.dto';
 import { UpdateProdukDto } from './dto/update-produk.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Produk } from './entities/produk.entity';
 import { Repository } from 'typeorm';
 import { EntityNotFoundError } from 'typeorm';
+import { Kategori } from 'src/kategori/entities/kategori.entity';
+import { NotFoundError } from 'rxjs';
+
+
 
 @Injectable()
 export class ProdukService {
+
   constructor(
     @InjectRepository(Produk)
     private produkRepository: Repository<Produk>,
+    @InjectRepository(Kategori)
+    private readonly kategoriRepository: Repository<Kategori>,
   ) {}
 
-  async create(createProdukDto: CreateProdukDto) {
-    const result = await this.produkRepository.insert(createProdukDto);
-    return this.produkRepository.findOneOrFail({
+  async createProduk(createProdukDto: CreateProdukDto):Promise<Produk> {
+    //periksa apakah id kategori ada
+    const kategori = await this.kategoriRepository.findOne({
       where: {
-        id_produk: result.identifiers[0].id,
-      },
+        id_kategori: createProdukDto.id_kategori
+      }
+    })
+    if (!kategori) {
+      throw new NotFoundException(`Kategori dengan id ${createProdukDto.id_kategori} tidak ditemukan`);
+    }
+    const newProduk = this.produkRepository.create({
+      ...createProdukDto,
+      kategori
     });
+    return this.produkRepository.save(newProduk);
   }
 
   findAll() {
@@ -47,7 +62,6 @@ export class ProdukService {
       }
     }
   }
-
   async update(id: string, updateProdukDto: UpdateProdukDto) {
     try {
       await this.produkRepository.findOneOrFail({

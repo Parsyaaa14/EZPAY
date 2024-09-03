@@ -8,7 +8,7 @@ import { LoggerModule } from 'nestjs-pino';
 import { HealthModule } from './health/health.module';
 import configuration from './config/configuration';
 import * as pino from 'pino';
-import { SeederModule } from '#/seeder/seeder.module';
+import { SeederModule } from './seeder/seeder.module';
 import { RoleModule } from './role/role.module';
 import { KategoriModule } from './kategori/kategori.module';
 import { ProdukModule } from './produk/produk.module';
@@ -74,7 +74,7 @@ import { AuthModule } from './auth/auth.module';
         NODE_ENV: Joi.string()
           .valid('development', 'production', 'test', 'provision')
           .default('development'),
-        PORT: Joi.number().default(3000),
+        PORT: Joi.number().default(3222),
         DATABASE_CLIENT: Joi.valid('mysql', 'postgres'),
         DATABASE_HOST: Joi.string(),
         DATABASE_NAME: Joi.string(),

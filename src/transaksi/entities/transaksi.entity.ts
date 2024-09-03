@@ -1,6 +1,6 @@
 import {
   Entity,
-  Column,
+  // Column,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   DeleteDateColumn,
@@ -23,7 +23,7 @@ export class Transaksi {
   id_transaksi: string;
 
   @ManyToMany(() => MetodeTransaksi, (metodeTransaksi) => metodeTransaksi.transaksi)
-  @JoinColumn()
+  @JoinTable({name: 'transaksi_metode'})
   metodeTransaksi: MetodeTransaksi[];
 
   @ManyToOne(() => User, (user) => user.transaksi)
