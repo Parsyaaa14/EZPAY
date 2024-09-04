@@ -8,12 +8,15 @@ import {
   CreateDateColumn,
   ManyToOne,
   OneToMany,
+  BeforeInsert,
+  JoinColumn,
 } from 'typeorm';
 
 import { Kategori } from '../../kategori/entities/kategori.entity';
 import { User } from '../../users/entities/user.entity';
 import { Toko } from 'src/toko/entities/toko.entity';
 import { DetilProdukPesanan } from 'src/detil_produk_pesanan/entities/detil_produk_pesanan.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 
 @Entity()
@@ -22,7 +25,7 @@ export class Produk {
   id_produk: string;
 
   @ManyToOne(() => Kategori, (kategori) => kategori.produk)
-  kategori?: Kategori;
+  kategori: Kategori;
   
 
   @ManyToOne(() => User, (user) => user.produk)
@@ -76,4 +79,21 @@ export class Produk {
 
   @VersionColumn()
   version: number;
+
+  @BeforeInsert()
+  @BeforeInsert()
+  generateKodeProduk() {
+    // Fungsi untuk membuat kode produk dengan kombinasi huruf dan angka
+    this.kode_produk = this.generateRandomCode();
+  }
+
+  // Fungsi untuk membuat kode 4 karakter acak campuran huruf dan angka
+  private generateRandomCode(): string {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; // Huruf dan angka
+    let result = '';
+    for (let i = 0; i < 6; i++) {
+      result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return result;
+  }
 }

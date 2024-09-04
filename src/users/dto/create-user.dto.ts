@@ -1,6 +1,7 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateUserDto {
+
   @IsNotEmpty()
   nama : string;
 
@@ -13,10 +14,10 @@ export class CreateUserDto {
   @IsNotEmpty()
   no_handphone: string;
 
-  @IsNotEmpty()
+
   salt: string;
 
   @IsNotEmpty()
-  status: string;
+  status: boolean;
 
 }

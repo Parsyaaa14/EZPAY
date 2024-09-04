@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, HttpStatus, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, HttpStatus, ParseUUIDPipe, Query, BadRequestException, HttpException, Res, Response } from '@nestjs/common';
 import { KategoriService } from './kategori.service';
 import { CreateKategoriDto } from './dto/create-kategori.dto';
 import { UpdateKategoriDto } from './dto/update-kategori.dto';
+import { Produk } from 'src/produk/entities/produk.entity';
 
 
 @Controller('kategori')
@@ -17,6 +18,13 @@ export class KategoriController {
     };
   }
 
+
+  @Get('/produk/:namaKategori')
+  async getProdukByKategori(@Param('namaKategori') namaKategori: string): Promise<Produk[]> {
+    return this.kategoriService.filterProdukByKategori(namaKategori);
+  }
+
+
   @Get()
   async findAll() {
     const [data, count] = await this.kategoriService.findAll();
@@ -27,7 +35,6 @@ export class KategoriController {
       message: 'success',
     };
   }
-
 
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string

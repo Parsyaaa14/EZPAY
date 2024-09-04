@@ -1,38 +1,32 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsString, IsNumber, IsBoolean, IsOptional } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsNumber,
+  IsBoolean,
+  IsOptional,
+} from 'class-validator';
 
 export class CreateProdukDto {
-
-  @IsNotEmpty()
+  @IsOptional()
   id_kategori: string;
-  
-  @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   nama_produk: string;
-
-
-  @IsNotEmpty()
+  @IsOptional()
   @Type(() => Number)
   harga_produk: number;
-
-
-  @IsNotEmpty()
+  @IsOptional()
   @Type(() => Number)
   stok: number;
-
-  @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   kode_produk: string;
-
-  @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   satuan_produk: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @Type(() => Boolean)
   status_produk: boolean;
 
   @IsOptional()
   gambar_produk: string;
- 
 }

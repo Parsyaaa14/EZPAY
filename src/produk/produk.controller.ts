@@ -1,55 +1,84 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, ParseUUIDPipe, HttpStatus, UseInterceptors, HttpException, UploadedFile } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Put,
+  Param,
+  Delete,
+  ParseUUIDPipe,
+  HttpStatus,
+  UseInterceptors,
+  HttpException,
+  UploadedFile,
+  Query,
+  BadRequestException,
+} from '@nestjs/common';
 import { ProdukService } from './produk.service';
 import { CreateProdukDto } from './dto/create-produk.dto';
 import { UpdateProdukDto } from './dto/update-produk.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
 import { diskStorage } from 'multer';
-
-
-
+import { Produk } from './entities/produk.entity';
 
 @Controller('produk')
 export class ProdukController {
   produkRepository: any;
   constructor(private readonly produkService: ProdukService) {}
 
-
   @Post()
-  @UseInterceptors(FileInterceptor('gambar_produk', { 
-    storage: diskStorage({
-      destination: './src/produk/gambar_produk',
-      filename:(req, file, cb) => {
-        const uniqueName = `${Date.now()}${extname(file.originalname)}`;
-        cb(null, uniqueName);
-      },
-    }),
-    fileFilter: (req, file, cb) => {
-      const allowTypes = ['image/png', 'image/jpg', 'image/jpeg'];
-      if (!allowTypes.includes(file.mimetype)) {
-        return cb(new HttpException('invalid file type', HttpStatus.BAD_REQUEST), false);
-      }
-      cb (null, true);
+  @UseInterceptors(
+    FileInterceptor('gambar_produk', {
+      storage: diskStorage({
+        destination: './src/produk/gambar_produk',
+        filename: (req, file, cb) => {
+          const uniqueName = `${Date.now()}${extname(file.originalname)}`;
+          cb(null, uniqueName);
+        },
+      }),
+      fileFilter: (req, file, cb) => {
+        const allowTypes = ['image/png', 'image/jpg', 'image/jpeg'];
+        if (!allowTypes.includes(file.mimetype)) {
+          return cb(
+            new HttpException('invalid file type', HttpStatus.BAD_REQUEST),
+            false,
+          );
+        }
+        cb(null, true);
       },
       limits: {
         fileSize: 1024 * 1024 * 5, // maks 5 mb
-      }
-  }))
+      },
+    }),
+  )
   async createProduk(
     @Body() createProdukDto: CreateProdukDto,
     @UploadedFile() file: Express.Multer.File,
-  ){
+  ) {
     try {
-      if(file){
+      if (file) {
         createProdukDto.gambar_produk = file.filename;
       }
       return await this.produkService.createProduk(createProdukDto);
     } catch (error) {
       throw new Error(`error membuat produk : ${error.messege}`);
-      }
     }
-  
+  }
 
+  @Get('filter-stok')
+  async filterProduk(): Promise<Produk[]> {
+    return this.produkService.filterProdukMinStok();
+  }
+
+  // @Get('filter')
+  // async filterProdukkategori(@Query('kategori') kategori: string): Promise<Produk[]> {
+  //   if (!kategori) {
+  //     throw new BadRequestException('Kategori parameter is missing');
+  //   }
+
+  //   return this.produkService.filterProdukByKategori(kategori);
+  // }
 
   @Get()
   async findAll() {
@@ -73,6 +102,12 @@ export class ProdukController {
   }
 
   @Put(':id')
+  // async update(
+  //   @Param('id', ParseUUIDPipe) id: string,
+  //   @Body() updateProdukDto: UpdateProdukDto,
+  // ): Promise<Produk> {
+  //   return this.produkService.update(id, updateProdukDto);
+  // }
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateProdukDto: UpdateProdukDto,

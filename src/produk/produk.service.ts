@@ -1,4 +1,4 @@
-import { Injectable, HttpException,HttpStatus, NotFoundException } from '@nestjs/common';
+import { Injectable, HttpException,HttpStatus, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { CreateProdukDto } from './dto/create-produk.dto';
 import { UpdateProdukDto } from './dto/update-produk.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -37,6 +37,18 @@ export class ProdukService {
     return this.produkRepository.save(newProduk);
   }
 
+  async filterProdukMinStok(): Promise<Produk[]> {
+    // Query untuk mendapatkan produk dengan stok lebih dari 0, diurutkan dari stok terkecil
+    const produk = await this.produkRepository
+      .createQueryBuilder('produk')
+      .where('produk.stok > 0')
+      .orderBy('produk.stok', 'ASC')
+      .limit(2)
+      .getMany();
+
+    return produk;
+  }
+
   findAll() {
     return this.produkRepository.findAndCount();
   }
@@ -62,6 +74,20 @@ export class ProdukService {
       }
     }
   }
+
+
+  // async updateProduk(id: string, updateProdukDto: UpdateProdukDto): Promise<Produk> {
+  //   // Cek apakah produk dengan ID tertentu ada
+  //   const produk = await this.produkRepository.findOne({ where: { id_produk: id } });
+  //   if (!produk) {
+  //     throw new NotFoundException(`Produk dengan id ${id} tidak ditemukan`);
+  //   }
+
+  //   // Update produk dengan properti yang diberikan
+  //   Object.assign(produk, updateProdukDto);
+  //   return await this.produkRepository.save(produk);
+  // }
+
   async update(id: string, updateProdukDto: UpdateProdukDto) {
     try {
       await this.produkRepository.findOneOrFail({
@@ -82,15 +108,33 @@ export class ProdukService {
         throw e;
       }
     }
-
-    await this.produkRepository.update(id, updateProdukDto);
-
-    return this.produkRepository.findOneOrFail({
-      where: {
-        id_produk: id,
-      },
-    });
   }
+
+  // async filterProdukByKategori(namaKategori: string): Promise<Produk[]> {
+  //   try {
+  //     const queryBuilder = this.produkRepository.createQueryBuilder('produk');
+
+  //     queryBuilder
+  //       .innerJoinAndSelect('produk.id_kategori', 'kategori')
+  //       .where('kategori.nama = :namaKategori', { namaKategori });
+
+  //     const produk = await queryBuilder.getMany();
+
+  //     return produk;
+  //   } catch (error) {
+  //     console.error('Error fetching products by category:', error); // Log the error for debugging
+  //     throw new InternalServerErrorException('Failed to filter products by category');
+  //   }
+  // }
+
+  //   await this.produkRepository.update(id, updateProdukDto);
+
+  //   return this.produkRepository.findOneOrFail({
+  //     where: {
+  //       id_produk: id,
+  //     },
+  //   });
+  // }
 
   async remove(id: string) {
     try {
