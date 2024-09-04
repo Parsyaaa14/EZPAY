@@ -49,7 +49,7 @@ export class User {
   @Column({ length: 50, nullable: true, unique: true})
   email: string;
 
-  @Column({ length: 25 })
+  @Column({ length: 25, nullable: true})
   no_handphone: string;
 
   @Column({ nullable: true })

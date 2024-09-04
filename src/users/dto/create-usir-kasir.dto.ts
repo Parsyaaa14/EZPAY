@@ -5,9 +5,6 @@ export class CreateUserKasirDto {
   nama: string;
 
   @IsNotEmpty()
-  no_handphone: string;
-
-  @IsNotEmpty()
   email: string;
 
   @IsNotEmpty()

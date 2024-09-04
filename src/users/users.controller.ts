@@ -15,7 +15,6 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { CreateUserKasirDto } from './dto/create-usir-kasir.dto';
-import { CreateKasirDto } from './dto/create-kasir-dto';
 
 @Controller('users')
 export class UsersController {
@@ -42,30 +41,38 @@ export class UsersController {
 
 
 
-  @Post('tambah-kasir')
+
+  @Post('/tambah-kasir')
   async tambahKasir(
-    @Body('nama') nama: string,
-    @Body('email') email: string,
-    @Body('no_handphone') no_handphone: string,
-  ) {
-    return this.usersService.tambahKasir(nama, email, no_handphone);
+    @Body() createUserKasirDto: CreateUserKasirDto
+  ): Promise<User> {
+    return this.usersService.tambahKasir(
+      createUserKasirDto.nama,
+      // createUserKasirDto.no_handphone,
+      createUserKasirDto.email,
+      createUserKasirDto.status
+    );
   }
 
-  // @Post('/tambah-kasir')
-  // async tambahKasir(
-  //   @Body() createUserKasirDto: CreateUserKasirDto
-  // ): Promise<User> {
-  //   return this.usersService.tambahKasir(
-  //     createUserKasirDto.nama,
-  //     createUserKasirDto.no_handphone,
-  //     createUserKasirDto.email,
-  //     createUserKasirDto.status
-  //   );
-  // }
+ 
 
-  @Post('create-admin')
-  async createAdmin(@Body() createUserDto: any) {
-    return this.usersService.createAdmin(createUserDto);
+  @Post('/tambah-admin')
+  async tambahAdmin(
+    @Body() createUserKasirDto: CreateUserDto
+  ): Promise<User> {
+    return this.usersService.tambahKasir(
+      createUserKasirDto.nama,
+      createUserKasirDto.email,
+      createUserKasirDto.status
+    );
+  }
+
+  @Put('edit-password/:id')
+  async editPassword(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('newPassword') newPassword: string,
+  ): Promise<User> {
+    return this.usersService.editPassword(id, newPassword);
   }
 
   @Post()
@@ -76,6 +83,7 @@ export class UsersController {
       message: 'success',
     };
   }
+
 
   @Get()
   async findAll() {

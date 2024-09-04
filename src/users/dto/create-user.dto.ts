@@ -6,16 +6,11 @@ export class CreateUserDto {
   nama : string;
 
   @IsNotEmpty()
-  password: string;
-
-  @IsNotEmpty()
   email: string;
 
   @IsNotEmpty()
   no_handphone: string;
 
-
-  salt: string;
 
   @IsNotEmpty()
   status: boolean;
