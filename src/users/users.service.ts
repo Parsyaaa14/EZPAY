@@ -15,21 +15,30 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as crypto from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { Role } from 'src/role/entities/role.entity';
-
-
+import { Hash } from 'crypto';
+import { EditKasirDto } from './dto/update-kasir-dto';
+import { CreateUserKasirDto } from './dto/create-usir-kasir.dto';
 
 @Injectable()
 export class UsersService {
   private readonly saltRounds = 10;
-
+  
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
-  ) {}
+    ) {}
+    
+    private generateRandomPassword(length: number): string {
+      return crypto.randomBytes(length).toString('hex').slice(0, length);
+    }
+    
+    private generateSalt(): string {
+      return crypto.randomBytes(16).toString('hex');
+    }
 
-  async register(nama: string, password: string, email: string): Promise<User> {
+    async register(nama: string, password: string, email: string): Promise<User> {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -51,110 +60,115 @@ export class UsersService {
     }
   }
 
+  // async tambahKasir(
+  //   nama: string,
+  //   email: string,
+  //   status: boolean,
+  // ): Promise<User> {
+  //   // Generate random password and salt
+  //   const password = this.generateRandomPassword(5); // 2 digits + 3 letters
+  //   const salt = this.generateSalt();
 
- 
-  private generateRandomPassword(length: number): string {
-    return crypto.randomBytes(length).toString('hex').slice(0, length);
-  }
+  //   // Hash the password with the generated salt
+  //   const hashedPassword = await bcrypt.hash(password, 2); // Combine password and salt for hashing
 
-  private generateSalt(): string {
-    return crypto.randomBytes(16).toString('hex');
-  }
+  //   // Get the 'Kasir' role
+  //   const role = await this.roleRepository.findOne({
+  //     where: { nama: 'Kasir' },
+  //   });
 
-  private async hashPassword(password: string, salt: string): Promise<string> {
-    return bcrypt.hash(password, salt);
-  }
+  //   if (!role) {
+  //     throw new Error('Role Kasir not found');
+  //   }
+
+  //   // Create a new user
+  //   const user = this.usersRepository.create({
+  //     nama,
+  //     email,
+  //     status,
+  //     password: hashedPassword, // Save the hashed password
+  //     salt, // Save the generated salt
+  //     role, // Assign the Kasir role
+  //   });
+
+  //   return this.usersRepository.save(user);
+  // }
 
 
-  private async generateSaltNew(): Promise<string> {
-    return bcrypt.genSalt(this.saltRounds);
-  }
-
-  async tambahKasir(
-    nama: string,
-    // no_handphone: string,
-    email: string,
-    status: boolean,
-  ): Promise<User> {
-    // Generate random password and salt
-    const password = this.generateRandomPassword(4); // Adjust length as needed
+  async tambahKasir(createUserKasirDto: CreateUserKasirDto): Promise<User> {
+    // Default password
+    const password = '123';
     const salt = this.generateSalt();
 
-    // Get the 'Kasir' role
-    const role = await this.roleRepository.findOne({ where: { nama: 'Kasir' } });
+    // Get the 'Admin' role
+    const role = await this.roleRepository.findOne({
+      where: { nama: 'Kasir' },
+    });
 
     if (!role) {
-      throw new Error('Role Kasir not found');
+      throw new Error('Role Ksir not found');
     }
 
-    // Create a new user
+    // Create a new user using the DTO
     const user = this.usersRepository.create({
-      nama,
-      // no_handphone,
-      email,
-      status,
-      password, // Save the generated password
+      ...createUserKasirDto,
+      password, // Save the default password
       salt,     // Save the generated salt
-      role,     // Assign the Kasir role
+      role,     // Assign the Admin role
     });
 
     return this.usersRepository.save(user);
   }
 
-  async tambahAdmin(
-    nama: string,
-    no_handphone: string,
-    email: string,
-    status: boolean,
-  ): Promise<User> {
-    // Generate random password and salt
-    const password = this.generateRandomPassword(4); // Adjust length as needed
+
+  async tambahAdmin(createUserDto: CreateUserDto): Promise<User> {
+    // Default password
+    const password = '123';
     const salt = this.generateSalt();
 
-    // Get the 'Kasir' role
-    const role = await this.roleRepository.findOne({ where: { nama: 'Admin' } });
+    // Get the 'Admin' role
+    const role = await this.roleRepository.findOne({
+      where: { nama: 'Admin' },
+    });
 
     if (!role) {
-      throw new Error('Role Kasir not found');
+      throw new Error('Role Admin not found');
     }
 
-    // Create a new user
+    // Create a new user using the DTO
     const user = this.usersRepository.create({
-      nama,
-      no_handphone,
-      email,
-      status,
-      password, // Save the generated password
+      ...createUserDto,
+      password, // Save the default password
       salt,     // Save the generated salt
-      role,     // Assign the Kasir role
+      role,     // Assign the Admin role
     });
 
     return this.usersRepository.save(user);
   }
 
- 
-  async editPassword(userId: string, newPassword: string): Promise<User> {
-    // Validasi panjang password
-    if (newPassword.length < 8) {
-      throw new BadRequestException('Password should be at least 8 characters long');
-    }
+  async editKasir(id: string, editKasirDto: EditKasirDto): Promise<User> {
+    const { nama, email, status, password } = editKasirDto;
 
-    // Generate salt dan hash password baru
-    const salt = await this.generateSaltNew();
-    const hashedPassword = await this.hashPassword(newPassword, salt);
-
-    // Cari pengguna berdasarkan ID
-    const user = await this.usersRepository.findOne({ where: { id_user: userId } });
+    // Cari user berdasarkan id
+    const user = await this.usersRepository.findOne({ where: { id_user: id } });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(`User dengan id "${id}" tidak ditemukan`);
     }
 
-    // Update password dan salt pengguna
-    user.password = hashedPassword;
-    user.salt = salt;
+    // Update atribut user
+    if (nama) user.nama = nama;
+    if (email) user.email = email;
+    if (status !== undefined) user.status = status;
 
-    // Simpan pengguna yang diperbarui
+    // Jika password diberikan, buat salt baru dan hash password-nya
+    if (password) {
+      const salt = await bcrypt.genSalt(); // Generate salt baru
+      user.salt = salt;
+      user.password = await bcrypt.hash(password, salt);
+    }
+
+    // Simpan perubahan
     return this.usersRepository.save(user);
   }
 
@@ -204,35 +218,58 @@ export class UsersService {
     }
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
-    try {
-      await this.usersRepository.findOneOrFail({
-        where: {
-          id_user: id,
-        },
-      });
-    } catch (e) {
-      if (e instanceof EntityNotFoundError) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.NOT_FOUND,
-            error: 'Data not found',
-          },
-          HttpStatus.NOT_FOUND,
-        );
-      } else {
-        throw e;
-      }
-    }
+  // async editKasir(
+  //   id_user: string,
+  //   nama: string,
+  //   email: string,
+  //   status: boolean,
+  // ): Promise<User> {
+  //   // Cari user berdasarkan id
+  //   const user = await this.usersRepository.findOne({ where: { id_user } });
 
-    await this.usersRepository.update(id, updateUserDto);
+  //   // Jika user tidak ditemukan, lempar error
+  //   if (!user) {
+  //     throw new NotFoundException('User not found');
+  //   }
 
-    return this.usersRepository.findOneOrFail({
-      where: {
-        id_user: id,
-      },
-    });
-  }
+  //   // Update atribut user yang dapat diubah
+  //   user.nama = nama;
+  //   user.email = email;
+  //   user.status = status;
+
+  //   // Simpan perubahan pada user
+  //   return this.usersRepository.save(user);
+  // }
+
+  // async update(id: string, updateUserDto: UpdateUserDto) {
+  //   try {
+  //     await this.usersRepository.findOneOrFail({
+  //       where: {
+  //         id_user: id,
+  //       },
+  //     });
+  //   } catch (e) {
+  //     if (e instanceof EntityNotFoundError) {
+  //       throw new HttpException(
+  //         {
+  //           statusCode: HttpStatus.NOT_FOUND,
+  //           error: 'Data not found',
+  //         },
+  //         HttpStatus.NOT_FOUND,
+  //       );
+  //     } else {
+  //       throw e;
+  //     }
+  //   }
+
+  //   await this.usersRepository.update(id, updateUserDto);
+
+  //   return this.usersRepository.findOneOrFail({
+  //     where: {
+  //       id_user: id,
+  //     },
+  //   });
+  // }
 
   async remove(id: string) {
     try {

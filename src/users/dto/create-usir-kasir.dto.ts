@@ -9,4 +9,5 @@ export class CreateUserKasirDto {
 
   @IsNotEmpty()
   status: boolean;
+
 }

@@ -11,7 +11,6 @@ export class CreateUserDto {
   @IsNotEmpty()
   no_handphone: string;
 
-
   @IsNotEmpty()
   status: boolean;
 

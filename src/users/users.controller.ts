@@ -9,12 +9,15 @@ import {
   ParseUUIDPipe,
   HttpStatus,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { CreateUserKasirDto } from './dto/create-usir-kasir.dto';
+import { EditPasswordDto } from './dto/edit-password.dto';
+import { EditKasirDto } from './dto/update-kasir-dto';
 
 @Controller('users')
 export class UsersController {
@@ -39,41 +42,56 @@ export class UsersController {
     }
   }
 
+  @Post('tambah-kasir')
+  async tambahKasir(@Body() createUserKasirDto: CreateUserKasirDto): Promise<User> {
+    return this.usersService.tambahKasir(createUserKasirDto);
+  }
 
 
+  // @Post('/tambah-kasir')
+  // async tambahKasir(
+  //   @Body() createUserKasirDto: CreateUserKasirDto
+  // ): Promise<User> {
+  //   return this.usersService.tambahKasir(
+  //     createUserKasirDto.nama,
+  //     // createUserKasirDto.no_handphone,
+  //     createUserKasirDto.email,
+  //     createUserKasirDto.status
+  //   );
+  // }
 
-  @Post('/tambah-kasir')
-  async tambahKasir(
-    @Body() createUserKasirDto: CreateUserKasirDto
-  ): Promise<User> {
-    return this.usersService.tambahKasir(
-      createUserKasirDto.nama,
-      // createUserKasirDto.no_handphone,
-      createUserKasirDto.email,
-      createUserKasirDto.status
-    );
+  @Post('tambah-admin')
+  async tambahAdmin(@Body() createUserDto: CreateUserDto): Promise<User> {
+    return this.usersService.tambahAdmin(createUserDto);
   }
 
  
 
-  @Post('/tambah-admin')
-  async tambahAdmin(
-    @Body() createUserKasirDto: CreateUserDto
-  ): Promise<User> {
-    return this.usersService.tambahKasir(
-      createUserKasirDto.nama,
-      createUserKasirDto.email,
-      createUserKasirDto.status
-    );
-  }
+  // @Post('/tambah-admin')
+  // async tambahAdmin(
+  //   @Body() createUserKasirDto: CreateUserDto
+  // ): Promise<User> {
+  //   return this.usersService.tambahAdmin(
+  //     createUserKasirDto.nama,
+  //     createUserKasirDto.no_handphone,
+  //     createUserKasirDto.email,
+  //     createUserKasirDto.status
+  //   );
+  // }
 
-  @Put('edit-password/:id')
-  async editPassword(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body('newPassword') newPassword: string,
-  ): Promise<User> {
-    return this.usersService.editPassword(id, newPassword);
-  }
+
+  // @Put('edit-password/:id')
+  // async editPassword(
+  //   @Param('id', ParseUUIDPipe) id: string,
+  //   @Body('newPassword') newPassword: string,
+  // ): Promise<User> {
+  //   // Validasi data body
+  //   if (!newPassword) {
+  //     throw new BadRequestException('New password is required');
+  //   }
+    
+  //   return this.usersService.editPassword(id, newPassword);
+  // }
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
@@ -106,16 +124,13 @@ export class UsersController {
     };
   }
 
-  @Put(':id')
-  async update(
+  @Put('edit-kasir/:id')
+  async editKasir(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateUserDto: UpdateUserDto,
-  ) {
-    return {
-      data: await this.usersService.update(id, updateUserDto),
-      statusCode: HttpStatus.OK,
-      message: 'success',
-    };
+    @Body() editKasirDto: EditKasirDto,
+  ): Promise<User> {
+    // Panggil service untuk mengupdate kasir berdasarkan id
+    return this.usersService.editKasir(id, editKasirDto);
   }
 
   @Delete(':id')

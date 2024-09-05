@@ -24,6 +24,18 @@ export class KategoriController {
     return this.kategoriService.filterProdukByKategori(namaKategori);
   }
 
+  // @Get('filter-produk/:namaKategori')
+  // async filterProdukByKategori(@Param('namaKategori') namaKategori: string): Promise<Produk[]> {
+  //   try {
+  //     return await this.kategoriService.filterProdukByKategori(namaKategori);
+  //   } catch (error) {
+  //     throw new HttpException(
+  //       `Gagal memfilter produk berdasarkan kategori: ${error.message}`,
+  //       HttpStatus.NOT_FOUND,
+  //     );
+  //   }
+  // }
+
 
   @Get()
   async findAll() {
@@ -46,16 +58,35 @@ export class KategoriController {
     };
   }
 
-  @Put(':id')
-  async update(
-   @Param('id', ParseUUIDPipe) id: string,
-   @Body() updateKategoriDto: UpdateKategoriDto 
-  ) {
-    return {
-      data: await this.kategoriService.update(id, updateKategoriDto),
-      statusCode: HttpStatus.OK,
-      message: 'success',
-    };
+  // @Put(':id_kategori')
+  // async updateNamaKategori(
+  //   @Param('id_kategori') id_kategori: string,
+  //   @Body() updateKategoriDto: UpdateKategoriDto,
+  // ): Promise<void> {
+  //   try {
+  //     const { nama } = updateKategoriDto; // DTO akan mengandung input nama baru
+  //     await this.kategoriService.updateNamaKategori(id_kategori, nama);
+  //   } catch (error) {
+  //     throw new HttpException(
+  //       `Gagal memperbarui nama kategori: ${error.message}`,
+  //       HttpStatus.BAD_REQUEST,
+  //     );
+  //   }
+  // }
+
+  @Put('update/:namaLama')
+  async updateKategori(
+    @Param('namaLama') namaLama: string,
+    @Body() updateKategoriDto: UpdateKategoriDto,
+  ): Promise<void> {
+    try {
+      await this.kategoriService.updateKategori(namaLama, updateKategoriDto);
+    } catch (error) {
+      throw new HttpException(
+        `Gagal memperbarui kategori: ${error.message}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   @Delete(':id')

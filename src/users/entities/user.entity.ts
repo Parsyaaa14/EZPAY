@@ -18,6 +18,7 @@ import { Pesanan } from '../../pesanan/entities/pesanan.entity';
 import { Transaksi } from '../../transaksi/entities/transaksi.entity';
 import { Toko } from '../../toko/entities/toko.entity';
 import * as crypto from 'crypto';
+import * as bcrypt from 'bcrypt';
 // import  { v4 as uuidv4 } from 'uuid';
 
 @Entity()
@@ -43,7 +44,7 @@ export class User {
   @Column({ type: 'varchar', length: 50 })
   nama: string;
 
-  @Column({ length: 50 })
+  @Column({ type: "text", nullable: true })
   password: string;
 
   @Column({ length: 50, nullable: true, unique: true})
@@ -105,4 +106,11 @@ export class User {
     }
     this.role = role;
   }
+
+  // @BeforeInsert()
+  // async hashPassword() {
+  //   if (this.password) {
+  //     this.password = await bcrypt.hash(this.password, 10);
+  //   }
+  // }
 }
