@@ -75,66 +75,55 @@ export class ProdukService {
     }
   }
 
+  async updateProduk(nama_produk: string, updateProdukDto: UpdateProdukDto): Promise<Produk> {
+    const { nama, ...updateData } = updateProdukDto;
 
-  // async updateProduk(id: string, updateProdukDto: UpdateProdukDto): Promise<Produk> {
-  //   // Cek apakah produk dengan ID tertentu ada
-  //   const produk = await this.produkRepository.findOne({ where: { id_produk: id } });
-  //   if (!produk) {
-  //     throw new NotFoundException(`Produk dengan id ${id} tidak ditemukan`);
-  //   }
+    // Cari produk berdasarkan nama produk
+    const produk = await this.produkRepository.findOne({ where: { nama_produk } });
 
-  //   // Update produk dengan properti yang diberikan
-  //   Object.assign(produk, updateProdukDto);
-  //   return await this.produkRepository.save(produk);
-  // }
-
-  async update(id: string, updateProdukDto: UpdateProdukDto) {
-    try {
-      await this.produkRepository.findOneOrFail({
-        where: {
-          id_produk: id,
-        },
-      });
-    } catch (e) {
-      if (e instanceof EntityNotFoundError) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.NOT_FOUND,
-            error: 'Data not found',
-          },
-          HttpStatus.NOT_FOUND,
-        );
-      } else {
-        throw e;
-      }
+    if (!produk) {
+      throw new NotFoundException(`Produk dengan nama ${nama_produk} tidak ditemukan`);
     }
+
+    // Jika nama kategori di-update, pastikan kategori tersebut ada
+    if (nama) {
+      const kategori = await this.kategoriRepository.findOne({
+        where: { nama: nama },
+      });
+
+      if (!kategori) {
+        throw new NotFoundException(`Kategori dengan nama ${nama} tidak ditemukan`);
+      }
+
+      produk.kategori = kategori;
+    }
+
+    // Update produk dengan data baru
+    Object.assign(produk, updateData);
+
+    // Generate kode_produk secara otomatis
+    produk.kode_produk = this.generateRandomCode();
+
+    // produk.status_produk = !produk.status_produk;
+
+
+    return this.produkRepository.save(produk);
   }
 
-  // async filterProdukByKategori(namaKategori: string): Promise<Produk[]> {
-  //   try {
-  //     const queryBuilder = this.produkRepository.createQueryBuilder('produk');
+  private generateRandomCode(): string {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; // Huruf dan angka
+    let result = '';
+    for (let i = 0; i < 6; i++) {
+      result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return result;
+  }
 
-  //     queryBuilder
-  //       .innerJoinAndSelect('produk.id_kategori', 'kategori')
-  //       .where('kategori.nama = :namaKategori', { namaKategori });
-
-  //     const produk = await queryBuilder.getMany();
-
-  //     return produk;
-  //   } catch (error) {
-  //     console.error('Error fetching products by category:', error); // Log the error for debugging
-  //     throw new InternalServerErrorException('Failed to filter products by category');
-  //   }
-  // }
-
-  //   await this.produkRepository.update(id, updateProdukDto);
-
-  //   return this.produkRepository.findOneOrFail({
-  //     where: {
-  //       id_produk: id,
-  //     },
-  //   });
-  // }
+  async getAllProduk(): Promise<number> {
+    // Menghitung jumlah produk yang ada di database
+    const count = await this.produkRepository.count();
+    return count;
+  }
 
   async remove(id: string) {
     try {

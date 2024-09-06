@@ -1,4 +1,5 @@
 import { IsString, IsNotEmpty, IsEmail } from 'class-validator';
+import { StatusUser } from '../entities/user.entity';
 
 export class CreateUserKasirDto {
   @IsNotEmpty()
@@ -8,6 +9,6 @@ export class CreateUserKasirDto {
   email: string;
 
   @IsNotEmpty()
-  status: boolean;
+  status: StatusUser;
 
 }

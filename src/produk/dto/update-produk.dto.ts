@@ -1,7 +1,8 @@
 import { PartialType } from '@nestjs/swagger';
 import { CreateProdukDto } from './create-produk.dto';
-import { IsNotEmpty, IsString, IsNumber, IsBoolean } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber, IsBoolean, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
+import { StatusProduk } from '../entities/produk.entity';
 
 export class UpdateProdukDto extends PartialType(CreateProdukDto) {
   nama_produk?: string;
@@ -18,6 +19,9 @@ export class UpdateProdukDto extends PartialType(CreateProdukDto) {
 
   satuan_produk?: string;
 
-  @Type(() => Boolean)
-  status_produk?: boolean;
+  @IsOptional()
+  nama?: string;
+
+
+  status_produk?: StatusProduk;
 }

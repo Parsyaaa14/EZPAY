@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { EditUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { CreateUserKasirDto } from './dto/create-usir-kasir.dto';
 import { EditPasswordDto } from './dto/edit-password.dto';
@@ -131,6 +131,15 @@ export class UsersController {
   ): Promise<User> {
     // Panggil service untuk mengupdate kasir berdasarkan id
     return this.usersService.editKasir(id, editKasirDto);
+  }
+
+  @Put('edit-admin/:id')
+  async editAdmin(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() editUserDto: EditUserDto,
+  ): Promise<User> {
+    // Panggil service untuk mengupdate kasir berdasarkan id
+    return this.usersService.editAdmin(id, editUserDto);
   }
 
   @Delete(':id')

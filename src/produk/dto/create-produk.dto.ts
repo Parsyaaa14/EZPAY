@@ -6,6 +6,7 @@ import {
   IsBoolean,
   IsOptional,
 } from 'class-validator';
+import { StatusProduk } from '../entities/produk.entity';
 
 export class CreateProdukDto {
   @IsOptional()
@@ -24,8 +25,7 @@ export class CreateProdukDto {
   satuan_produk: string;
 
   @IsOptional()
-  @Type(() => Boolean)
-  status_produk: boolean;
+  status_produk: StatusProduk;
 
   @IsOptional()
   gambar_produk: string;

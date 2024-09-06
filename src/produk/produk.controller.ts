@@ -92,6 +92,12 @@ export class ProdukController {
     };
   }
 
+  @Get('count')
+  async getAllProduk(): Promise<{ jumlahProduk: number }> {
+    const jumlah = await this.produkService.getAllProduk();
+    return { jumlahProduk: jumlah };
+  }
+
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     return {
@@ -101,22 +107,50 @@ export class ProdukController {
     };
   }
 
-  @Put(':id')
+  // @Put(':id')
+  // // async update(
+  // //   @Param('id', ParseUUIDPipe) id: string,
+  // //   @Body() updateProdukDto: UpdateProdukDto,
+  // // ): Promise<Produk> {
+  // //   return this.produkService.update(id, updateProdukDto);
+  // // }
   // async update(
   //   @Param('id', ParseUUIDPipe) id: string,
   //   @Body() updateProdukDto: UpdateProdukDto,
-  // ): Promise<Produk> {
-  //   return this.produkService.update(id, updateProdukDto);
+  // ) {
+  //   return {
+  //     data: await this.produkService.update(id, updateProdukDto),
+  //     statusCode: HttpStatus.OK,
+  //     message: 'success',
+  //   };
   // }
-  async update(
-    @Param('id', ParseUUIDPipe) id: string,
+
+  @Put(':nama_produk')
+  @UseInterceptors(FileInterceptor('gambar_produk', {
+    storage: diskStorage({
+      destination: './uploads',
+      filename: (req, file, callback) => {
+        const filename = `${Date.now()}${extname(file.originalname)}`;
+        callback(null, filename);
+      },
+    }),
+  }))
+  async updateProduk(
+    @Param('nama_produk') nama_produk: string,
     @Body() updateProdukDto: UpdateProdukDto,
-  ) {
-    return {
-      data: await this.produkService.update(id, updateProdukDto),
-      statusCode: HttpStatus.OK,
-      message: 'success',
-    };
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<Produk> {
+    try {
+      if (file) {
+        updateProdukDto.gambar_produk = file.filename; // Simpan nama file
+      }
+      return await this.produkService.updateProduk(nama_produk, updateProdukDto);
+    } catch (error) {
+      throw new HttpException(
+        `Gagal memperbarui produk: ${error.message}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   @Delete(':id')

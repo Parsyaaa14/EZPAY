@@ -8,7 +8,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { EditUserDto} from './dto/update-user.dto';
 import { EntityNotFoundError, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -167,6 +167,35 @@ export class UsersService {
       user.salt = salt;
       user.password = await bcrypt.hash(password, salt);
     }
+    // user.status = !user.status;
+
+    // Simpan perubahan
+    return this.usersRepository.save(user);
+  }
+
+  async editAdmin(id: string, editUserDto: EditUserDto): Promise<User> {
+    const { nama, email,no_handphone, status, password } = editUserDto;
+
+    // Cari user berdasarkan id
+    const user = await this.usersRepository.findOne({ where: { id_user: id } });
+
+    if (!user) {
+      throw new NotFoundException(`User dengan id "${id}" tidak ditemukan`);
+    }
+
+    // Update atribut user
+    if (nama) user.nama = nama;
+    if (email) user.email = email;
+    if (no_handphone) user.no_handphone = no_handphone;
+    if (status !== undefined) user.status = status;
+
+    // Jika password diberikan, buat salt baru dan hash password-nya
+    if (password) {
+      const salt = await bcrypt.genSalt(); // Generate salt baru
+      user.salt = salt;
+      user.password = await bcrypt.hash(password, salt);
+    }
+    // user.status = !user.status;
 
     // Simpan perubahan
     return this.usersRepository.save(user);

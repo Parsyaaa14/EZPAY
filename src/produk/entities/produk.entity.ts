@@ -18,7 +18,10 @@ import { Toko } from 'src/toko/entities/toko.entity';
 import { DetilProdukPesanan } from 'src/detil_produk_pesanan/entities/detil_produk_pesanan.entity';
 import { v4 as uuidv4 } from 'uuid';
 
-
+export enum StatusProduk {
+  Aktif = 'aktif',
+  TidakAktif = 'tidak aktif',
+}
 @Entity()
 export class Produk {
   @PrimaryGeneratedColumn('uuid')
@@ -55,8 +58,8 @@ export class Produk {
   @Column({ type: 'varchar', length: 60})
   satuan_produk: string;
 
-  @Column({ type: 'boolean', default:true})
-  status_produk: boolean;
+  @Column({type: 'enum', enum: StatusProduk, default: StatusProduk.Aktif})
+  status_produk: StatusProduk;
 
 
   @CreateDateColumn({

@@ -21,6 +21,11 @@ import * as crypto from 'crypto';
 import * as bcrypt from 'bcrypt';
 // import  { v4 as uuidv4 } from 'uuid';
 
+
+export enum StatusUser {
+  Aktif = 'aktif',
+  TidakAktif = 'tidak aktif',
+}
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -56,8 +61,11 @@ export class User {
   @Column({ nullable: true })
   salt: string;
 
-  @Column({ type: 'boolean', default:true})
-  status: boolean;
+  // @Column({ type: 'boolean', default:true})
+  // status: boolean;
+
+  @Column ({ type: 'enum', enum: StatusUser, default: StatusUser.Aktif })
+  status: StatusUser;
 
   @CreateDateColumn({
     type: 'timestamp with time zone',
