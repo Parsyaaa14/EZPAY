@@ -21,6 +21,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
 import { diskStorage } from 'multer';
 import { Produk } from './entities/produk.entity';
+import { SearchProdukDto } from './dto/search-produk.dto';
 
 @Controller('produk')
 export class ProdukController {
@@ -98,6 +99,11 @@ export class ProdukController {
     return { jumlahProduk: jumlah };
   }
 
+  @Get('search')
+  async searchProduk(@Query('nama_produk') nama_produk: string): Promise<Produk[]> {
+    return this.produkService.searchProduk(nama_produk);
+  }
+
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     return {
@@ -162,4 +168,5 @@ export class ProdukController {
       message: 'success',
     };
   }
+
 }

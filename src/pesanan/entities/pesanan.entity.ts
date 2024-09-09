@@ -24,15 +24,18 @@ export class Pesanan {
 
   @ManyToOne(() => User, (user) => user.pesanan)
   user?: User;
-
   @OneToOne(() => Transaksi, (transaksi) => transaksi.pesanan)
-  transaksi: Transaksi;
+  transaksi: Transaksi; // Relasi OneToOne, satu pesanan hanya memiliki satu transaksi
 
   @OneToOne(() => Toko, (toko) => toko.pesanan)
   @JoinColumn()
   toko?: Toko;
 
-  @OneToMany(() => DetilProdukPesanan, (detilProdukPesanan) => detilProdukPesanan.pesanan)
+  @OneToMany(
+    () => DetilProdukPesanan,
+    (detilProdukPesanan) => detilProdukPesanan.pesanan,
+    { cascade: true },
+  )
   detilProdukPesanan: DetilProdukPesanan[];
 
   @Column({ type: 'decimal', precision: 10, scale: 2, default: '0' })

@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { EntityNotFoundError } from 'typeorm';
 import { Kategori } from 'src/kategori/entities/kategori.entity';
 import { NotFoundError } from 'rxjs';
+import { SearchProdukDto } from './dto/search-produk.dto';
 
 
 
@@ -51,6 +52,13 @@ export class ProdukService {
 
   findAll() {
     return this.produkRepository.findAndCount();
+  }
+
+  async searchProduk(nama_produk: string): Promise<Produk[]> {
+    return await this.produkRepository
+      .createQueryBuilder('produk')
+      .where('produk.nama_produk ILIKE :nama', { nama: `%${nama_produk}%` }) // ILIKE untuk pencarian case-insensitive
+      .getMany();
   }
 
   async findOne(id: string) {

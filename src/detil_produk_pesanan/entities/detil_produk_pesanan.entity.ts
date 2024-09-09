@@ -24,7 +24,7 @@ export class DetilProdukPesanan {
   @ManyToOne(() => Pesanan, (pesanan) => pesanan.detilProdukPesanan)
   pesanan: Pesanan;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ type: 'int' })
   jumlah_produk: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, default: '0' })
