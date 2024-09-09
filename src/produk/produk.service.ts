@@ -6,8 +6,7 @@ import { Produk } from './entities/produk.entity';
 import { Repository } from 'typeorm';
 import { EntityNotFoundError } from 'typeorm';
 import { Kategori } from 'src/kategori/entities/kategori.entity';
-import { NotFoundError } from 'rxjs';
-import { SearchProdukDto } from './dto/search-produk.dto';
+
 
 
 
@@ -49,6 +48,14 @@ export class ProdukService {
 
     return produk;
   }
+
+  async getProdukByHarga(sortBy: 'ASC' | 'DESC'): Promise<Produk[]> {
+    return await this.produkRepository
+      .createQueryBuilder('produk')
+      .orderBy('produk.harga_produk', sortBy)
+      .getMany();
+  }
+  
 
   findAll() {
     return this.produkRepository.findAndCount();

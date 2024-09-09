@@ -21,7 +21,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
 import { diskStorage } from 'multer';
 import { Produk } from './entities/produk.entity';
-import { SearchProdukDto } from './dto/search-produk.dto';
+
 
 @Controller('produk')
 export class ProdukController {
@@ -97,6 +97,11 @@ export class ProdukController {
   async getAllProduk(): Promise<{ jumlahProduk: number }> {
     const jumlah = await this.produkService.getAllProduk();
     return { jumlahProduk: jumlah };
+  }
+
+  @Get('by-harga')
+  async getProdukByHarga(@Query('sort') sort: 'ASC' | 'DESC' = 'ASC'): Promise<Produk[]> {
+    return this.produkService.getProdukByHarga(sort);
   }
 
   @Get('search')

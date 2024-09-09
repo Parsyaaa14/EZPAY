@@ -60,40 +60,6 @@ export class UsersService {
     }
   }
 
-  // async tambahKasir(
-  //   nama: string,
-  //   email: string,
-  //   status: boolean,
-  // ): Promise<User> {
-  //   // Generate random password and salt
-  //   const password = this.generateRandomPassword(5); // 2 digits + 3 letters
-  //   const salt = this.generateSalt();
-
-  //   // Hash the password with the generated salt
-  //   const hashedPassword = await bcrypt.hash(password, 2); // Combine password and salt for hashing
-
-  //   // Get the 'Kasir' role
-  //   const role = await this.roleRepository.findOne({
-  //     where: { nama: 'Kasir' },
-  //   });
-
-  //   if (!role) {
-  //     throw new Error('Role Kasir not found');
-  //   }
-
-  //   // Create a new user
-  //   const user = this.usersRepository.create({
-  //     nama,
-  //     email,
-  //     status,
-  //     password: hashedPassword, // Save the hashed password
-  //     salt, // Save the generated salt
-  //     role, // Assign the Kasir role
-  //   });
-
-  //   return this.usersRepository.save(user);
-  // }
-
 
   async tambahKasir(createUserKasirDto: CreateUserKasirDto): Promise<User> {
     // Default password
@@ -150,7 +116,9 @@ export class UsersService {
     const { nama, email, status, password } = editKasirDto;
 
     // Cari user berdasarkan id
-    const user = await this.usersRepository.findOne({ where: { id_user: id } });
+    const user = await this.usersRepository.findOne({
+      where: { id_user: id },
+    });
 
     if (!user) {
       throw new NotFoundException(`User dengan id "${id}" tidak ditemukan`);
@@ -167,10 +135,9 @@ export class UsersService {
       user.salt = salt;
       user.password = await bcrypt.hash(password, salt);
     }
-    // user.status = !user.status;
 
     // Simpan perubahan
-    return this.usersRepository.save(user);
+    return await this.usersRepository.save(user);
   }
 
   async editAdmin(id: string, editUserDto: EditUserDto): Promise<User> {
@@ -201,15 +168,10 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  async findByEmail(email: string): Promise<User | null> {
-    const user = await this.usersRepository.findOne({ where: { email } });
-    if (!user) {
-      throw new NotFoundException(
-        `User dengan email ${email} tidak ditemukan.`,
-      );
-    }
-    return user;
-  }
+  
+  // async findById(id: string): Promise<User | undefined> {
+  //   return this.usersRepository.findOne({ where: { id_user: id } });
+  // }
 
   async create(createUserDto: CreateUserDto) {
     const result = await this.usersRepository.insert(createUserDto);
@@ -220,7 +182,10 @@ export class UsersService {
       },
     });
   }
-
+  
+  async findByEmail(email: string): Promise<User | undefined> {
+    return this.usersRepository.findOne({ where: { email } });
+  }
   findAll() {
     return this.usersRepository.findAndCount();
   }
@@ -246,59 +211,6 @@ export class UsersService {
       }
     }
   }
-
-  // async editKasir(
-  //   id_user: string,
-  //   nama: string,
-  //   email: string,
-  //   status: boolean,
-  // ): Promise<User> {
-  //   // Cari user berdasarkan id
-  //   const user = await this.usersRepository.findOne({ where: { id_user } });
-
-  //   // Jika user tidak ditemukan, lempar error
-  //   if (!user) {
-  //     throw new NotFoundException('User not found');
-  //   }
-
-  //   // Update atribut user yang dapat diubah
-  //   user.nama = nama;
-  //   user.email = email;
-  //   user.status = status;
-
-  //   // Simpan perubahan pada user
-  //   return this.usersRepository.save(user);
-  // }
-
-  // async update(id: string, updateUserDto: UpdateUserDto) {
-  //   try {
-  //     await this.usersRepository.findOneOrFail({
-  //       where: {
-  //         id_user: id,
-  //       },
-  //     });
-  //   } catch (e) {
-  //     if (e instanceof EntityNotFoundError) {
-  //       throw new HttpException(
-  //         {
-  //           statusCode: HttpStatus.NOT_FOUND,
-  //           error: 'Data not found',
-  //         },
-  //         HttpStatus.NOT_FOUND,
-  //       );
-  //     } else {
-  //       throw e;
-  //     }
-  //   }
-
-  //   await this.usersRepository.update(id, updateUserDto);
-
-  //   return this.usersRepository.findOneOrFail({
-  //     where: {
-  //       id_user: id,
-  //     },
-  //   });
-  // }
 
   async remove(id: string) {
     try {
