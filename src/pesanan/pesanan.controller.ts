@@ -1,34 +1,13 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { PesananService } from './pesanan.service';
-import { CreatePesananDto } from './dto/create-pesanan.dto';
-import { UpdatePesananDto } from './dto/update-pesanan.dto';
+import { Pesanan } from './entities/pesanan.entity';
 
 @Controller('pesanan')
 export class PesananController {
   constructor(private readonly pesananService: PesananService) {}
 
-  @Post()
-  create(@Body() createPesananDto: CreatePesananDto) {
-    return this.pesananService.create(createPesananDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.pesananService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.pesananService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePesananDto: UpdatePesananDto) {
-    return this.pesananService.update(+id, updatePesananDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.pesananService.remove(+id);
+  @Post('save')
+  async save(@Body() pesananData: { detil_produk_pesanan: { id_produk: string; jumlah_produk: number }[]; metode_transaksi_id: string; userId?: string }): Promise<Pesanan> {
+    return this.pesananService.save(pesananData);
   }
 }
