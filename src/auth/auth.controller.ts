@@ -6,10 +6,22 @@ import { AuthService } from './auth.service';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('login')  // Ini mendefinisikan endpoint POST /auth/login
-  async login(@Body() body: { email: string; password: string }) {
-    return this.authService.login(body.email, body.password);
+  @Post('login/kasir')
+  async loginForKasir(@Body() body: { email: string; password: string }) {
+    const { email, password } = body;
+    return this.authService.loginForKasir(email, password);
   }
+
+  @Post('login/admin')
+  async loginForAdmin(@Body() body: { email: string; password: string }) {
+    const { email, password } = body;
+    return this.authService.loginForAdmin(email, password);
+  }
+
+  // @Post('login')  // Ini mendefinisikan endpoint POST /auth/login
+  // async login(@Body() body: { email: string; password: string }) {
+  //   return this.authService.login(body.email, body.password);
+  // }
 }
 // @Controller('auth')
 // export class AuthController {
@@ -20,4 +32,3 @@ export class AuthController {
 //     const { email, password } = loginDto;
 //     return this.authService.login(email, password);
 //   }
-
