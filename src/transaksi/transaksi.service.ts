@@ -42,7 +42,6 @@ export class TransaksiService {
         pesanan: t.pesanan,
         user: t.pesanan.user,
         id_transaksi: t.id_transaksi,
-        jumlahProduk: jumlahProdukTotal
       };
     });
   }
