@@ -40,7 +40,6 @@ export class TransaksiService {
         totalHarga: t.totalHarga,
         metodeTransaksi: t.metodeTransaksi,
         pesanan: t.pesanan,
-        user: t.user,
       };
     });
   }
