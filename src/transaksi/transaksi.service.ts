@@ -5,47 +5,57 @@ import { Transaksi } from './entities/transaksi.entity';
 import { Pesanan } from 'src/pesanan/entities/pesanan.entity';
 import { MetodeTransaksi } from 'src/metode_transaksi/entities/metode_transaksi.entity';
 import { User } from 'src/users/entities/user.entity';
+import { DetilProdukPesanan } from 'src/detil_produk_pesanan/entities/detil_produk_pesanan.entity';
 
 @Injectable()
 export class TransaksiService {
   constructor(
     @InjectRepository(Transaksi)
     private readonly transaksiRepository: Repository<Transaksi>,
-    @InjectRepository(Pesanan)
-    private readonly pesananRepository: Repository<Pesanan>,
-    @InjectRepository(MetodeTransaksi)
-    private readonly metodeTransaksiRepository: Repository<MetodeTransaksi>,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
   ) {}
 
 
-  async getLatestTransaksi(): Promise<any[]> {
-    const transaksi = await this.transaksiRepository.find({
+  async getTransaksi(id: string): Promise<Transaksi> {
+    return this.transaksiRepository.findOne({
+      where: { id_transaksi: id },
       relations: ['pesanan', 'pesanan.detilProdukPesanan', 'metodeTransaksi'],
-      order: { createdAt: 'DESC' },
-      take: 10,
-    });
-  
-    return transaksi.map(t => {
-      let jumlahProdukTotal = 0;
-      if (t.pesanan && t.pesanan.detilProdukPesanan) {
-        for (const detil of t.pesanan.detilProdukPesanan) {
-          jumlahProdukTotal += detil.jumlah_produk;
-        }
-      }
-  
-      return {
-        createdAt: t.createdAt,
-        totalHarga: t.totalHarga,
-        metodeTransaksi: t.metodeTransaksi,
-        pesanan: t.pesanan,
-        user: t.pesanan.user,
-        id_transaksi: t.id_transaksi,
-      };
     });
   }
 
+
+  async getAllTransaksi(): Promise<{
+    jumlah_produk: number;
+    totalHarga: number;
+    createdAt: Date;
+    metodeTransaksi: string[];
+  }[]> {
+    const transaksiList = await this.transaksiRepository
+      .createQueryBuilder('transaksi')
+      .leftJoinAndSelect('transaksi.pesanan', 'pesanan')
+      .leftJoinAndSelect('pesanan.detilProdukPesanan', 'detilProdukPesanan')
+      .leftJoinAndSelect('transaksi.metodeTransaksi', 'metodeTransaksi')
+      .orderBy('transaksi.createdAt', 'DESC')
+      .take(10)
+      .getMany();
+
+    return transaksiList.map((transaksi) => {
+      const jumlahProduk = transaksi.pesanan.detilProdukPesanan.reduce(
+        (acc, detil) => acc + detil.jumlah_produk,
+        0,
+      );
+
+      const metodeTransaksi = transaksi.metodeTransaksi.map(
+        (metode) => metode.nama, // Pastikan ada field nama_metode di entitas MetodeTransaksi
+      );
+
+      return {
+        jumlah_produk: jumlahProduk,
+        totalHarga: transaksi.totalHarga,
+        createdAt: transaksi.createdAt,
+        metodeTransaksi,
+      };
+    });
+  }
 
   // async bayar(pesananId: string, metodeTransaksiId: string): Promise<Transaksi> {
   //   // Temukan pesanan

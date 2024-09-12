@@ -18,10 +18,14 @@ import { BayarDto } from './dto/bayar-dto';
 export class TransaksiController {
   constructor(private readonly transaksiService: TransaksiService) {}
 
+  @Get(':id')
+  async getTransaksi(@Param('id') id: string) {
+    return this.transaksiService.getTransaksi(id);
+  }
 
-  @Get('latest')
-  async getLatestTransaksi(): Promise<any[]> {
-    return this.transaksiService.getLatestTransaksi();
+  @Get()
+  async getAllTransaksi() {
+    return this.transaksiService.getAllTransaksi();
   }
 
   // @Post('bayar')
