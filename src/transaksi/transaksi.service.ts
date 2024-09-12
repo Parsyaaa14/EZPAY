@@ -19,6 +19,33 @@ export class TransaksiService {
     private readonly userRepository: Repository<User>,
   ) {}
 
+<<<<<<< HEAD
+=======
+  async getLatestTransaksi(): Promise<any[]> {
+    const transaksi = await this.transaksiRepository.find({
+      relations: ['pesanan', 'pesanan.detilProdukPesanan', 'metodeTransaksi'],
+      order: { createdAt: 'DESC' },
+      take: 10,
+    });
+  
+    return transaksi.map(t => {
+      let jumlahProdukTotal = 0;
+      if (t.pesanan && t.pesanan.detilProdukPesanan) {
+        for (const detil of t.pesanan.detilProdukPesanan) {
+          jumlahProdukTotal += detil.jumlah_produk;
+        }
+      }
+  
+      return {
+        createdAt: t.createdAt,
+        totalHarga: t.totalHarga,
+        metodeTransaksi: t.metodeTransaksi,
+        jumlahProdukTotal: jumlahProdukTotal,
+      };
+    });
+  }
+
+>>>>>>> bca59a6 (1)
   // async bayar(pesananId: string, metodeTransaksiId: string): Promise<Transaksi> {
   //   // Temukan pesanan
   //   const pesanan = await this.pesananRepository.findOne({
