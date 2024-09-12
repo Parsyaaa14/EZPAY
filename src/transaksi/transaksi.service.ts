@@ -40,7 +40,7 @@ export class TransaksiService {
         createdAt: t.createdAt,
         totalHarga: t.totalHarga,
         metodeTransaksi: t.metodeTransaksi,
-        jumlahProdukTotal: jumlahProdukTotal,
+        jumlah_total: t.pesanan?.detilProdukPesanan?.length || 0,
       };
     });
   }
