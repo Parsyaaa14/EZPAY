@@ -3,7 +3,7 @@ import { EntityTarget } from 'typeorm/common/EntityTarget';
 import { DataSource } from 'typeorm';
 import { ObjectLiteral } from 'typeorm/common/ObjectLiteral';
 import { ConfigService } from '@nestjs/config';
-// import { User } from '#/users/entities/user.entity';
+// import { User } from 'src/users/entities/user.entity';
 // import { levelMasterData3} from './data/user';
 import { levelMasterData } from './data/role';
 import { levelMasterData2 } from './data/kategori';

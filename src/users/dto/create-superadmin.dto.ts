@@ -1,7 +1,7 @@
 import { IsNotEmpty} from 'class-validator';
 import { StatusUser } from '../entities/user.entity';
 
-export class CreateUserDto {
+export class CreateSuperadminDto {
 
   @IsNotEmpty()
   nama : string;
@@ -14,5 +14,8 @@ export class CreateUserDto {
 
   @IsNotEmpty()
   status: StatusUser;
+
+  @IsNotEmpty()
+  password: string;
 
 }

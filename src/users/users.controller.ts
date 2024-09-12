@@ -9,14 +9,13 @@ import {
   ParseUUIDPipe,
   HttpStatus,
   NotFoundException,
-  BadRequestException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { CreateSuperadminDto } from './dto/create-superadmin.dto';
 import { EditUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { CreateUserKasirDto } from './dto/create-usir-kasir.dto';
-import { EditPasswordDto } from './dto/edit-password.dto';
 import { EditKasirDto } from './dto/update-kasir-dto';
 
 @Controller('users')
@@ -49,18 +48,6 @@ export class UsersController {
     return this.usersService.tambahKasir(createUserKasirDto);
   }
 
-  // @Post('/tambah-kasir')
-  // async tambahKasir(
-  //   @Body() createUserKasirDto: CreateUserKasirDto
-  // ): Promise<User> {
-  //   return this.usersService.tambahKasir(
-  //     createUserKasirDto.nama,
-  //     // createUserKasirDto.no_handphone,
-  //     createUserKasirDto.email,
-  //     createUserKasirDto.status
-  //   );
-  // }
-
   @Post('tambah-admin')
   async tambahAdmin(@Body() createUserDto: CreateUserDto): Promise<User> {
     return this.usersService.tambahAdmin(createUserDto);
@@ -73,6 +60,11 @@ export class UsersController {
       statusCode: HttpStatus.CREATED,
       message: 'success',
     };
+  }
+
+  @Post('tambah-superadmin')
+  async tambahSuperadmin(@Body() CreateSuperadminDto: CreateSuperadminDto): Promise<User> {
+    return this.usersService.tambahSuperadmin(CreateSuperadminDto);
   }
 
   @Get()
