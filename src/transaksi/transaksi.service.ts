@@ -19,9 +19,7 @@ export class TransaksiService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
+
   async getLatestTransaksi(): Promise<any[]> {
     const transaksi = await this.transaksiRepository.find({
       relations: ['pesanan', 'pesanan.detilProdukPesanan', 'metodeTransaksi'],
@@ -47,9 +45,7 @@ export class TransaksiService {
     });
   }
 
->>>>>>> bca59a6 (1)
-=======
->>>>>>> 8c7fd14 (Initial commit from extracted folder)
+
   // async bayar(pesananId: string, metodeTransaksiId: string): Promise<Transaksi> {
   //   // Temukan pesanan
   //   const pesanan = await this.pesananRepository.findOne({
