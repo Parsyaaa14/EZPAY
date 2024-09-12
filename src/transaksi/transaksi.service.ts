@@ -20,6 +20,7 @@ export class TransaksiService {
   ) {}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   async getLatestTransaksi(): Promise<any[]> {
     const transaksi = await this.transaksiRepository.find({
@@ -47,6 +48,8 @@ export class TransaksiService {
   }
 
 >>>>>>> bca59a6 (1)
+=======
+>>>>>>> 8c7fd14 (Initial commit from extracted folder)
   // async bayar(pesananId: string, metodeTransaksiId: string): Promise<Transaksi> {
   //   // Temukan pesanan
   //   const pesanan = await this.pesananRepository.findOne({

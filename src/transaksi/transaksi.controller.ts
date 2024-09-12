@@ -19,6 +19,7 @@ export class TransaksiController {
   constructor(private readonly transaksiService: TransaksiService) {}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   @Get('latest')
   async getLatestTransaksi(): Promise<any[]> {
@@ -26,6 +27,8 @@ export class TransaksiController {
   }
 
 >>>>>>> bca59a6 (1)
+=======
+>>>>>>> 8c7fd14 (Initial commit from extracted folder)
   // @Post('bayar')
   // async bayar(@Body() body: {
   //   pesananId: string;

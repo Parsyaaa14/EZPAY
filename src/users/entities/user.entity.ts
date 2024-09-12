@@ -19,9 +19,13 @@ import { Transaksi } from '../../transaksi/entities/transaksi.entity';
 import { Toko } from '../../toko/entities/toko.entity';
 import * as crypto from 'crypto';
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 import * as bcrypt from 'bcrypt';
 >>>>>>> bca59a6 (1)
+=======
+import * as bcrypt from 'bcrypt';
+>>>>>>> 8c7fd14 (Initial commit from extracted folder)
 // import  { v4 as uuidv4 } from 'uuid';
 
 
