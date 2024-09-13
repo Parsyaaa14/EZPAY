@@ -22,15 +22,6 @@ import { EditKasirDto } from './dto/update-kasir-dto';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post('register')
-  async register(
-    @Body('nama') nama: string,
-    @Body('password') password: string,
-    @Body('email') email: string,
-  ) {
-    return this.usersService.register(nama, password, email);
-  }
-
   @Get('email/:email')
   async getUserByEmail(@Param('email') email: string) {
     try {

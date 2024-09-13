@@ -1,8 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
+import { StatusToko, Toko } from 'src/toko/entities/toko.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -12,6 +13,8 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    @InjectRepository(Toko)
+    private readonly tokoRepository: Repository<Toko>,
     private readonly jwtService: JwtService, // Inject JwtService
   ) {
     this.jwtSecret = process.env.JWT_SECRET || 'your_default_jwt_secret';
@@ -48,35 +51,31 @@ export class AuthService {
     return { access_token };
   }
 
-  async loginForAdmin(email: string, password: string): Promise<{ access_token: string }> {
-    const user = await this.usersRepository.findOne({
-      where: { email },
-      relations: ['role'], // Ensure role is loaded
-    });
+  async validateToko(email: string, password: string) {
+    const toko = await this.tokoRepository.findOne({ where: { email } });
 
-    if (!user) {
-      throw new UnauthorizedException('Email tidak ditemukan');
+    if (!toko) {
+      throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Verifikasi password
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      throw new UnauthorizedException('Password salah');
+    const passwordIsValid = await bcrypt.compare(password, toko.password);
+    if (!passwordIsValid) {
+      throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Cek apakah role adalah 'admin'
-    if (user.role.nama !== 'Admin') {
-      throw new UnauthorizedException('Akses ditolak: Anda bukan admin');
+    if (toko.status === StatusToko.PENDING) {
+      throw new ForbiddenException('Mohon menunggu konfirmasi sistem');
     }
 
-    // Buat payload JWT
-    const payload = { email: user.email, sub: user.id_user };
+    if (toko.status === StatusToko.REJECTED) {
+      return { redirect: '/rejected-page' };
+    }
 
-    // Generate token JWT
-    const access_token = this.jwtService.sign(payload);
+    // Generate JWT token
+    const payload = { email: toko.email, sub: toko.id_toko };
+    const accessToken = this.jwtService.sign(payload);
 
-    return { access_token };
+    return { message: 'Login berhasil', accessToken };
   }
 }
 

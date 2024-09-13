@@ -2,10 +2,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  ConflictException,
-  InternalServerErrorException,
   NotFoundException,
-  BadRequestException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { CreateSuperadminDto } from './dto/create-superadmin.dto';
@@ -16,24 +13,22 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as crypto from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { Role } from 'src/role/entities/role.entity';
-import { Hash } from 'crypto';
 import { EditKasirDto } from './dto/update-kasir-dto';
 import { CreateUserKasirDto } from './dto/create-usir-kasir.dto';
 
 @Injectable()
 export class UsersService {
   private readonly saltRounds = 10;
-  
+
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
     ) {}
-    
     private generateRandomPassword(length: number): string {
       return crypto.randomBytes(length).toString('hex').slice(0, length);
-    }
+    } 
 
     private ubahSalt(): string {
       return bcrypt.genSaltSync();
@@ -46,28 +41,7 @@ export class UsersService {
     private generateSalt(): string {
       return crypto.randomBytes(16).toString('hex');
     }
-
-    async register(nama: string, password: string, email: string): Promise<User> {
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = this.usersRepository.create({
-      nama,
-      password: hashedPassword,
-      email,
-    });
-
-    try {
-      return await this.usersRepository.save(user);
-    } catch (error) {
-      // Handle jika email atau username sudah terdaftar
-      if (error.code === 'ER_DUP_ENTRY' || error.code === '23505') {
-        throw new ConflictException('Username atau email sudah terdaftar');
-      } else {
-        throw new InternalServerErrorException('Terjadi kesalahan pada server');
-      }
-    }
-  }
+  
 
   async tambahKasir(createUserKasirDto: CreateUserKasirDto): Promise<User> {
     // Default password

@@ -6,6 +6,7 @@ import { User } from './entities/user.entity';
 import { Role } from 'src/role/entities/role.entity';
 import { RoleService } from 'src/role/role.service';
 import { AuthModule } from 'src/auth/auth.module';
+import { Toko } from 'src/toko/entities/toko.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, Role])],

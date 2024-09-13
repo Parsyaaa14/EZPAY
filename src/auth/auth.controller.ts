@@ -15,7 +15,7 @@ export class AuthController {
   @Post('login/admin')
   async loginForAdmin(@Body() body: { email: string; password: string }) {
     const { email, password } = body;
-    return this.authService.loginForAdmin(email, password);
+    return this.authService.validateToko(email, password);
   }
 
   // @Post('login')  // Ini mendefinisikan endpoint POST /auth/login

@@ -1,26 +1,50 @@
 import { Injectable } from '@nestjs/common';
-import { CreateTokoDto } from './dto/create-toko.dto';
-import { UpdateTokoDto } from './dto/update-toko.dto';
+import { DaftarDto } from './dto/daftar.dto';
+// import { UpdateTokoDto } from './dto/update-toko.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { StatusToko, Toko } from './entities/toko.entity';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class TokoService {
-  create(createTokoDto: CreateTokoDto) {
-    return 'This action adds a new toko';
+  constructor(
+    @InjectRepository(Toko)
+    private tokoRepository: Repository<Toko>,
+  ) {}
+
+  async registerToko(daftarDto: DaftarDto) {
+    const { nama, email, no_handphone, password, nama_toko, deskripsi_toko, alamat_toko, foto } = daftarDto;
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newToko = this.tokoRepository.create({
+      nama,
+      email,
+      no_handphone,
+      password: hashedPassword,
+      nama_toko,
+      deskripsi_toko,
+      alamat_toko,
+      foto,
+      status: StatusToko.PENDING, // Set status to pending
+    });
+
+    return this.tokoRepository.save(newToko);
   }
 
-  findAll() {
-    return `This action returns all toko`;
+  async getPendingRegistrations() {
+    return this.tokoRepository.find({ where: { status: StatusToko.PENDING } });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} toko`;
+  async approveRegistration(id: number) {
+    return this.tokoRepository.update(id, { status: StatusToko.APPROVED });
   }
 
-  update(id: number, updateTokoDto: UpdateTokoDto) {
-    return `This action updates a #${id} toko`;
+  async rejectRegistration(id: number) {
+    return this.tokoRepository.update(id, { status: StatusToko.REJECTED });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} toko`;
-  }
 }
+

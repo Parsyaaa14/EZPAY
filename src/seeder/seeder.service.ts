@@ -20,6 +20,7 @@ import { MetodeTransaksi } from 'src/metode_transaksi/entities/metode_transaksi.
 import { DetilProdukPesanan } from 'src/detil_produk_pesanan/entities/detil_produk_pesanan.entity';
 import { levelMasterData8 } from './data/detil_produk_pesanan';
 
+
 // import { userMasterData } from './data/user';
 
 @Injectable()
@@ -66,7 +67,6 @@ export class SeederService implements OnApplicationBootstrap {
     // await this.insertIfNotExist(User, levelMasterData3);
     // await this.insertIfNotExist(Produk, levelMasterData4)
     await this.insertIfNotExist(Pesanan, levelMasterData5)
-    await this.insertIfNotExist(Toko, levelMasterData6)
     await this.insertIfNotExist(MetodeTransaksi, levelMasterData7)
     await this.insertIfNotExist(DetilProdukPesanan, levelMasterData8)
 
