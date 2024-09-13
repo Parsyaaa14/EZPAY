@@ -62,6 +62,7 @@ export class TransaksiService {
       const metodeTransaksi = transaksi.metodeTransaksi?.map(metode => metode.nama) ?? [];
 
       return {
+        id_transaksi: transaksi.id_transaksi, // Menyertakan id_transaksi
         jumlah_produk: produkDetail.reduce((acc, item) => acc + item.jumlah, 0),
         totalHarga: transaksi.totalHarga ?? 0,
         createdAt: transaksi.createdAt ?? new Date(),
@@ -80,6 +81,11 @@ export class TransaksiService {
     const regex = /^\d{4}-\d{2}-\d{2}$/;
     return regex.test(dateString) && !isNaN(new Date(dateString).getTime());
   }
+
+  async getAllTransaksiCount(): Promise<number> {
+    // Menghitung jumlah produk yang ada di database
+    const count = await this.transaksiRepository.count();
+    return count;}
 
   async getAllTransaksiLong(): Promise<{
     jumlah_produk: number;

@@ -48,6 +48,12 @@ export class TransaksiController {
     return this.transaksiService.getAllTransaksi(startDate, endDate);
   }
 
+  @Get('count')
+  async getAllTransaksiCount(): Promise<{ jumlahTransaksi: number }> {
+    const jumlahTransaksi = await this.transaksiService.getAllTransaksiCount();
+    return { jumlahTransaksi };
+  }
+
   // @Get('all')
   // async getAllTransaksiLong() {
   //   return this.transaksiService.getAllTransaksiLong();
