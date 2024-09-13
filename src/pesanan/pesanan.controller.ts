@@ -17,6 +17,7 @@ export class PesananController {
     detil_produk_pesanan: { id_produk: string; jumlah_produk: number }[];
     metode_transaksi_id: string;
     userId?: string;
+    id_transaksi?: string;
   }): Promise<Transaksi> {
     return this.pesananService.saveOrderAndTransaction(pesananData);
   }

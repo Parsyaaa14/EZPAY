@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   BadRequestException,
+  Query,
 } from '@nestjs/common';
 import { TransaksiService } from './transaksi.service';
 import { CreateTransaksiDto } from './dto/create-transaksi.dto';
@@ -18,15 +19,49 @@ import { BayarDto } from './dto/bayar-dto';
 export class TransaksiController {
   constructor(private readonly transaksiService: TransaksiService) {}
 
-  @Get(':id')
+  @Get()
   async getTransaksi(@Param('id') id: string) {
     return this.transaksiService.getTransaksi(id);
   }
 
-  @Get()
-  async getAllTransaksi() {
-    return this.transaksiService.getAllTransaksi();
+  @Get('/all')
+  async getAllTransaksi(
+    @Query('startDate') startDate: string = '2000-01-01', // Default ke awal tahun 2000
+    @Query('endDate') endDate: string = new Date().toISOString().split('T')[0] // Default ke tanggal hari ini
+  ): Promise<{
+    jumlah_produk: number;
+    totalHarga: number;
+    createdAt: Date;
+    metodeTransaksi: string[];
+    user: {
+      id_user: string; // Jika id_user adalah string (misalnya UUID)
+      nama: string;
+    };
+    produkDetail: {
+      id_produk: string; // Jika id_produk adalah string (misalnya UUID)
+      nama_produk: string;
+      jumlah: number;
+      harga: number;
+      total: number;
+    }[];
+  }[]> {
+    return this.transaksiService.getAllTransaksi(startDate, endDate);
   }
+
+  @Get('count')
+  async getAllTransaksiCount(): Promise<{ jumlahTransaksi: number }> {
+    const jumlahTransaksi = await this.transaksiService.getAllTransaksiCount();
+    return { jumlahTransaksi };
+  }
+
+  // @Get('all')
+  // async getAllTransaksiLong() {
+  //   return this.transaksiService.getAllTransaksiLong();
+  // }
+  // @Get('all2')
+  // async getAllTransaksiVeryLong() {
+  //   return this.transaksiService.getAllTransaksiVeryLong();
+  // }
 
   // @Post('bayar')
   // async bayar(@Body() body: {
