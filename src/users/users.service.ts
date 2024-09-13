@@ -8,6 +8,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
+import { CreateSuperadminDto } from './dto/create-superadmin.dto';
 import { EditUserDto} from './dto/update-user.dto';
 import { EntityNotFoundError, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -33,6 +34,14 @@ export class UsersService {
     private generateRandomPassword(length: number): string {
       return crypto.randomBytes(length).toString('hex').slice(0, length);
     }
+
+    private ubahSalt(): string {
+      return bcrypt.genSaltSync();
+    }
+    
+    private hashPassword(password: string, salt: string): string {
+      return bcrypt.hashSync(password, salt); // Hash password with the generated salt
+    }    
     
     private generateSalt(): string {
       return crypto.randomBytes(16).toString('hex');
@@ -59,7 +68,6 @@ export class UsersService {
       }
     }
   }
-
 
   async tambahKasir(createUserKasirDto: CreateUserKasirDto): Promise<User> {
     // Default password
@@ -111,6 +119,44 @@ export class UsersService {
 
     return this.usersRepository.save(user);
   }
+
+  async tambahSuperadmin(CreateSuperadminDto: CreateSuperadminDto): Promise<User> {
+    if (!CreateSuperadminDto.password) {
+      throw new Error('Password is required');
+    }
+  
+    const salt = this.ubahSalt();
+    const hashedPassword = this.hashPassword(CreateSuperadminDto.password, salt);
+  
+    // Check if email already exists
+    const existingUser = await this.usersRepository.findOne({
+      where: { email: CreateSuperadminDto.email },
+    });
+  
+    if (existingUser) {
+      throw new Error('Email already exists');
+    }
+  
+    const role = await this.roleRepository.findOne({
+      where: { nama: 'SuperAdmin' },
+    });
+  
+    if (!role) {
+      throw new Error('Role SuperAdmin not found');
+    }
+  
+    const user = this.usersRepository.create({
+      ...CreateSuperadminDto,
+      password: hashedPassword,
+      salt,
+      role,
+    });
+  
+    return this.usersRepository.save(user);
+  }
+  
+  
+  
 
   async editKasir(id: string, editKasirDto: EditKasirDto): Promise<User> {
     const { nama, email, status, password } = editKasirDto;

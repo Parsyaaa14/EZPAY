@@ -5,15 +5,16 @@
 
 export const levelMasterData3 = [
   {
-    nama: 'Hasta',
-    password: '12345',
-    no_handphone: '081234567890',
-    salt: '23131e76-ee28-407c-aed7-a5d573cb1cd3',
-    status: 'true',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    deletedAt: null,
-    version: 1,
+  id_user: '4d31fae1-41b6-48f0-ace6-8cfb5f86f98d',
+  nama: 'Zaki',
+  email: 'milano23zak@gmail.com',
+  id_role: '5ef0555f-a6c2-452b-9c3f-3a4c966c5a5b',
+  password: 'zaki123',
+  salt: 'P1B7EWEcBTik',
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  deletedAt: null,
+  version: 1
   },
 ];
 
