@@ -52,13 +52,13 @@ export class TokoController {
     return this.tokoService.getPendingRegistrations();
   }
 
-  @Patch('registrations/:id/approve')
+  @Patch('register/:id/approve')
 
   async approveRegistration(@Param('id') id: number) {
     return this.tokoService.approveRegistration(id);
   }
 
-  @Patch('registrations/:id/reject')
+  @Patch('register/:id/reject')
   async rejectRegistration(@Param('id') id: number) {
     return this.tokoService.rejectRegistration(id);
   }

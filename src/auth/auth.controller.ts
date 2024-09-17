@@ -12,7 +12,7 @@ export class AuthController {
     return this.authService.loginForKasir(email, password);
   }
 
-  @Post('login/admin')
+  @Post('login/toko')
   async loginForAdmin(@Body() body: { email: string; password: string }) {
     const { email, password } = body;
     return this.authService.validateToko(email, password);
