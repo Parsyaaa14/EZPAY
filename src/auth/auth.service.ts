@@ -18,6 +18,7 @@ export class AuthService {
     private readonly jwtService: JwtService, // Inject JwtService
   ) {
     this.jwtSecret = process.env.JWT_SECRET || 'your_default_jwt_secret';
+    console.log('JWT_SECRET:', this.jwtSecret);  // Log untuk memastikan JWT_SECRET terbaca
   }
 
   async loginForKasir(email: string, password: string): Promise<{ access_token: string }> {
@@ -48,6 +49,11 @@ export class AuthService {
     // Generate token JWT
     const access_token = this.jwtService.sign(payload);
 
+    // Pengecekan tambahan jika diperlukan
+    if (access_token) {
+      console.log(`User ${user.email} berhasil login dengan role kasir.`);
+    }
+
     return { access_token };
   }
 
@@ -75,9 +81,15 @@ export class AuthService {
     const payload = { email: toko.email, sub: toko.id_toko };
     const accessToken = this.jwtService.sign(payload);
 
+    // Tambahkan log atau tindakan lain setelah login berhasil
+    if (accessToken) {
+      console.log(`Toko ${toko.email} berhasil login dengan status ${toko.status}`);
+    }
+
     return { message: 'Login berhasil', accessToken };
   }
 }
+
 
 
 

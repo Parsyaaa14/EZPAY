@@ -12,6 +12,6 @@ import { Toko } from 'src/toko/entities/toko.entity';
   imports: [TypeOrmModule.forFeature([User, Role])],
   controllers: [UsersController],
   providers: [UsersService, RoleService],
-  exports: [UsersService, TypeOrmModule.forFeature([User, Role])], // Ekspor UserService dan TypeOrmModule
+  exports: [UsersService, TypeOrmModule.forFeature([User, Role, AuthModule])], // Ekspor UserService dan TypeOrmModule
 })
 export class UsersModule {}
