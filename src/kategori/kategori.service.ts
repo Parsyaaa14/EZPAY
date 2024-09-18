@@ -21,7 +21,10 @@ export class KategoriService {
     private produkRepository: Repository<Produk>,
   ) {}
   async create(createKategoriDto: CreateKategoriDto) {
-    const result = await this.kategoriRepository.insert(createKategoriDto);
+    const kategori = new Kategori();
+    kategori.nama = createKategoriDto.nama
+    const result = await this.kategoriRepository.insert(kategori);
+    
     return this.kategoriRepository.findOneOrFail({
       where: {
         id_kategori: result.identifiers[0].id,

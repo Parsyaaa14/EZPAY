@@ -1,5 +1,4 @@
-
-import { IsBoolean, IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
 import { StatusUser } from '../entities/user.entity';
 
 export class EditKasirDto {
@@ -16,6 +15,6 @@ export class EditKasirDto {
 
   @IsOptional()
   @IsString()
-  @MinLength(5)
+  @MinLength(6)
   password?: string;
 }
