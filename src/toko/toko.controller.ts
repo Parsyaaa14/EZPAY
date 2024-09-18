@@ -63,28 +63,8 @@ export class TokoController {
     return this.tokoService.rejectRegistration(id);
   }
 
-  // @Post()
-  // create(@Body() DaftarDto: DaftarDto) {
-  //   return this.tokoService.create(DaftarDto);
-  // }
-
-  // @Get()
-  // findAll() {
-  //   return this.tokoService.findAll();
-  // }
-
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.tokoService.findOne(+id);
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateTokoDto: UpdateTokoDto) {
-  //   return this.tokoService.update(+id, updateTokoDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.tokoService.remove(+id);
-  // }
+  @Get('approved')
+  async getApprovedToko() {
+    return this.tokoService.getApprovedToko();
+  }
 }

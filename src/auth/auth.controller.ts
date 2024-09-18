@@ -18,6 +18,11 @@ export class AuthController {
     return this.authService.validateToko(email, password);
   }
 
+  @Post('login/superadmin')
+  async loginForSuperadmin(@Body() body: { email: string; password: string }) {
+    const { email, password } = body;
+    return this.authService.loginForSuperadmin(email, password);
+  }
   // @Post('login')  // Ini mendefinisikan endpoint POST /auth/login
   // async login(@Body() body: { email: string; password: string }) {
   //   return this.authService.login(body.email, body.password);
