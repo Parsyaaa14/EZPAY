@@ -8,7 +8,7 @@ export class DaftarDto {
   @IsEmail()
   email: string;
 
-  @IsPhoneNumber('ID')
+  @IsNotEmpty()
   no_handphone: string;
 
   @IsNotEmpty()

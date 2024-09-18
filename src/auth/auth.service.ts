@@ -61,12 +61,12 @@ export class AuthService {
     const toko = await this.tokoRepository.findOne({ where: { email } });
 
     if (!toko) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('akun tidak ditemukan');
     }
 
     const passwordIsValid = await bcrypt.compare(password, toko.password);
     if (!passwordIsValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('password salah');
     }
 
     if (toko.status === StatusToko.PENDING) {
@@ -87,6 +87,42 @@ export class AuthService {
     }
 
     return { message: 'Login berhasil', accessToken };
+  }
+
+  async loginForSuperadmin(email: string, password: string): Promise<{ access_token: string }> {
+    const user = await this.usersRepository.findOne({
+      where: { email },
+      relations: ['role'], // Ensure role is loaded
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Email tidak ditemukan');
+    }
+
+    // Verifikasi password
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      throw new UnauthorizedException('Password salah');
+    }
+
+    // Cek apakah role adalah 'Superadmin'
+    if (user.role.nama !== 'SuperAdmin') {
+      throw new UnauthorizedException('Akses ditolak: Anda bukan Superadmin');
+    }
+
+    // Buat payload JWT
+    const payload = { email: user.email, sub: user.id_user };
+
+    // Generate token JWT
+    const access_token = this.jwtService.sign(payload);
+
+    // Pengecekan tambahan jika diperlukan
+    if (access_token) {
+      console.log(`User ${user.email} berhasil login dengan role Superadmin.`);
+    }
+
+    return { access_token };
   }
 }
 

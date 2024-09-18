@@ -41,9 +41,7 @@ export class Toko {
   @Column({ length: 50, nullable: true, unique: true})
   email: string;
 
-  @Matches(/^[0-9]{10,15}$/, {
-    message: 'no_handphone must be a valid phone number',
-  })
+  @Column({ length: 25, nullable: true})
   no_handphone: string;
 
 

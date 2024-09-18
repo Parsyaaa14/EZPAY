@@ -46,5 +46,8 @@ export class TokoService {
     return this.tokoRepository.update(id, { status: StatusToko.REJECTED });
   }
 
+  async getApprovedToko(): Promise<Toko[]> {
+    return this.tokoRepository.find({ where: { status: StatusToko.APPROVED } });
+  }
 }
 
