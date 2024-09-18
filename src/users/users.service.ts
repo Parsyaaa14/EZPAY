@@ -45,7 +45,7 @@ export class UsersService {
 
   async tambahKasir(createUserKasirDto: CreateUserKasirDto): Promise<User> {
     // Default password
-    const password = '123';
+    const password = '123456';
     const salt = this.generateSalt();
 
     // Get the 'Admin' role
@@ -208,6 +208,27 @@ export class UsersService {
   }
   findAll() {
     return this.usersRepository.findAndCount();
+  }
+
+
+  async findAllKasir(): Promise<User[]> {
+    // Mencari role "kasir"
+    const kasirRole = await this.roleRepository.findOne({
+      where: { nama: 'Kasir' }, // Ganti dengan field yang sesuai jika nama_role berbeda
+    });
+  
+    if (!kasirRole) {
+      throw new Error('Role kasir tidak ditemukan');
+    }
+  
+    // Mencari semua pengguna dengan role "kasir"
+    return this.usersRepository.find({
+      where: {
+        role: {
+          id_role: kasirRole.id_role,
+        },
+      },
+    });
   }
 
   async findOne(id: string) {

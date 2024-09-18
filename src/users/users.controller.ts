@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
   HttpStatus,
   NotFoundException,
+  HttpException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -68,6 +69,25 @@ export class UsersController {
       statusCode: HttpStatus.OK,
       message: 'success',
     };
+  }
+
+  @Get('kasir')
+  async getAllKasir() {
+    try {
+      const kasirUsers = await this.usersService.findAllKasir();
+      return {
+        data: kasirUsers.map(user => ({
+          id_kasir: user.id_user, // Sesuaikan dengan atribut Anda
+          nama_kasir: user.nama,
+          status: user.status,
+        })),
+      };
+    } catch (error) {
+      throw new HttpException(
+        `Error fetching kasir users: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
   @Get(':id')
