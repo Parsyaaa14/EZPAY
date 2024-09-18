@@ -163,6 +163,17 @@ export class PesananService {
       if (!produk) {
         throw new NotFoundException(`Produk dengan ID ${detil.id_produk} tidak ditemukan`);
       }
+
+          // Periksa apakah stok mencukupi
+    if (produk.stok < detil.jumlah_produk) {
+      throw new Error(`Stok produk ${produk.nama_produk} tidak mencukupi.`);
+    }
+
+    // Kurangi stok produk sesuai jumlah yang dipesan
+    produk.stok -= detil.jumlah_produk;
+    
+    // Simpan perubahan stok ke database
+    await this.produkRepository.save(produk);
   
       const totalHargaProduk = produk.harga_produk * detil.jumlah_produk;
       jumlahProdukTotal += detil.jumlah_produk;

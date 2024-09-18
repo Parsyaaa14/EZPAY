@@ -81,7 +81,7 @@ export class ProdukController {
   //   return this.produkService.filterProdukByKategori(kategori);
   // }
 
-  @Get()
+  @Get('all')
   async findAll() {
     const [data, count] = await this.produkService.findAll();
 
