@@ -49,11 +49,15 @@ export class ProdukService {
     return produk;
   }
 
-  async getProdukByHarga(sortBy: 'ASC' | 'DESC'): Promise<Produk[]> {
-    return await this.produkRepository
-      .createQueryBuilder('produk')
-      .orderBy('produk.harga_produk', sortBy)
-      .getMany();
+  async getProdukByHarga(sort: 'ASC' | 'DESC', kategori?: string): Promise<Produk[]> {
+    const queryBuilder = this.produkRepository.createQueryBuilder('produk')
+      .orderBy('produk.harga_produk', sort);
+    
+    if (kategori) {
+      queryBuilder.andWhere('produk.id_kategori = :kategori', { kategori });
+    }
+
+    return await queryBuilder.getMany();
   }
   
 

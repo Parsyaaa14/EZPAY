@@ -100,10 +100,12 @@ export class ProdukController {
   }
 
   @Get('by-harga')
-  async getProdukByHarga(@Query('sort') sort: 'ASC' | 'DESC' = 'ASC'): Promise<Produk[]> {
-    return this.produkService.getProdukByHarga(sort);
+  async getProdukByHarga(
+    @Query('sort') sort: 'ASC' | 'DESC',
+    @Query('kategori') kategori?: string,
+  ): Promise<Produk[]> {
+    return await this.produkService.getProdukByHarga(sort, kategori);
   }
-
   @Get('search')
   async searchProduk(@Query('nama_produk') nama_produk: string): Promise<Produk[]> {
     return this.produkService.searchProduk(nama_produk);
