@@ -7,6 +7,7 @@ import { User } from 'src/users/entities/user.entity';
 import { Role } from 'src/role/entities/role.entity';
 import { Toko } from 'src/toko/entities/toko.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TokoService } from 'src/toko/toko.service';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       }),
     }),
   ],
-  providers: [AuthService],
+  providers: [AuthService, TokoService],
   controllers: [AuthController],
   exports: [AuthService],
 })

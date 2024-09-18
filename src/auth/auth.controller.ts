@@ -1,10 +1,15 @@
 // auth.controller.ts
 import { Controller, Post, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { ValidateTokoDto } from './dto/validate-toko.dto';
+import { TokoService } from 'src/toko/toko.service';
 
-@Controller('auth')  // Perhatikan bahwa ini mendefinisikan prefix 'auth'
+@Controller('auth') // Perhatikan bahwa ini mendefinisikan prefix 'auth'
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly tokoService: TokoService,
+  ) {}
 
   @Post('login/kasir')
   async loginForKasir(@Body() body: { email: string; password: string }) {
@@ -12,9 +17,9 @@ export class AuthController {
     return this.authService.loginForKasir(email, password);
   }
 
-  @Post('login/toko')
-  async loginForAdmin(@Body() body: { email: string; password: string }) {
-    const { email, password } = body;
+  @Post('login/')
+  async validateToko(@Body() validateTokoDto: ValidateTokoDto) {
+    const { email, password } = validateTokoDto;
     return this.authService.validateToko(email, password);
   }
 
