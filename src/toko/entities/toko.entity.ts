@@ -41,15 +41,12 @@ export class Toko {
   @Column({ type: 'varchar', length: 60 })
   alamat_toko: string;
 
-  @Column({ type: 'text',nullable: true})
+  @Column({ type: 'text', nullable: true })
   foto: string;
 
   @Column({ type: 'varchar', length: 100 })
   deskripsi_toko: string;
 
-  // @Column({ type: 'varchar', length: 100 })
-  // alasan: string;
-  
   @Column({
     type: 'enum',
     enum: StatusToko,

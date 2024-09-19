@@ -69,8 +69,11 @@ export class TokoController {
   }
   @Get('approved')
   async getApprovedToko() {
-    return this.tokoService.getApprovedToko();
+    const tokos = await this.tokoService.getApprovedToko();
+    console.log(tokos); // Periksa output di konsol
+    return tokos;
   }
+  
 }
 
 

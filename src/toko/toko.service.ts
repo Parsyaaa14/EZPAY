@@ -30,7 +30,7 @@ export class TokoService {
   ) {
     const { nama, email, no_handphone, password } = adminDto;
     const { nama_toko, alamat_toko, deskripsi_toko, foto } = tokoDto;
-
+  
     // Cek apakah user dengan email ini sudah ada
     const existingUser = await this.userRepository.findOne({
       where: { email },
@@ -38,7 +38,7 @@ export class TokoService {
     if (existingUser) {
       throw new ConflictException('User dengan email ini sudah ada');
     }
-
+  
     // Cek apakah toko dengan nama ini sudah ada
     const existingToko = await this.tokoRepository.findOne({
       where: { nama_toko },
@@ -46,7 +46,7 @@ export class TokoService {
     if (existingToko) {
       throw new ConflictException('Toko dengan nama ini sudah ada');
     }
-
+  
     // Ambil role Admin dari database
     const roleAdmin = await this.roleRepository.findOne({
       where: { nama: 'Admin' },
@@ -54,11 +54,11 @@ export class TokoService {
     if (!roleAdmin) {
       throw new BadRequestException('Role Admin tidak ditemukan');
     }
-
+  
     // Buat user admin baru
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
-
+  
     const newAdmin = this.userRepository.create({
       nama,
       email,
@@ -67,9 +67,9 @@ export class TokoService {
       salt,
       role: roleAdmin, // Assign role admin
     });
-
+  
     await this.userRepository.save(newAdmin);
-
+  
     // Buat toko baru dan hubungkan dengan admin
     const newToko = this.tokoRepository.create({
       nama_toko,
@@ -79,15 +79,16 @@ export class TokoService {
       status: StatusToko.PENDING, // Status toko default adalah PENDING
       user: newAdmin, // Hubungkan toko dengan admin yang baru dibuat
     });
-
+  
     await this.tokoRepository.save(newToko);
-
+  
     return {
       message: 'Toko dan Admin berhasil dibuat. Toko menunggu persetujuan.',
       toko: newToko,
       admin: newAdmin,
     };
   }
+  
 
   // Method untuk SuperAdmin approve/reject toko
   async approveToko(id_toko: string, status: StatusToko) {
@@ -130,8 +131,12 @@ export class TokoService {
     return this.tokoRepository.find({ where: { status: StatusToko.PENDING } });
   }
   async getApprovedToko(): Promise<Toko[]> {
-    return this.tokoRepository.find({ where: { status: StatusToko.APPROVED } });
+    return this.tokoRepository.find({
+      where: { status: StatusToko.APPROVED },
+      relations: ['user'], // Hubungkan dengan tabel user
+    });
   }
+  
   
 }
 
