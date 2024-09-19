@@ -35,19 +35,6 @@ export class Toko {
   @ManyToOne(() => User, (user) => user.toko)
   user: User;
 
-  @Column({ type: 'varchar', length: 50,nullable: true})
-  nama: string;
-
-  @Column({ length: 50, nullable: true, unique: true})
-  email: string;
-
-  @Column({ length: 25, nullable: true})
-  no_handphone: string;
-
-
-  @Column({ type: "text", nullable: true })
-  password: string;
-
   @Column({ type: 'varchar', length: 60 })
   nama_toko: string;
 

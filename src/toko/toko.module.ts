@@ -6,9 +6,10 @@ import { Toko } from './entities/toko.entity';
 import { Produk } from 'src/produk/entities/produk.entity';
 import { Pesanan } from 'src/pesanan/entities/pesanan.entity';
 import { User } from 'src/users/entities/user.entity';
+import { Role } from 'src/role/entities/role.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Toko,Produk,Pesanan,User])],
+  imports: [TypeOrmModule.forFeature([Toko,Produk,Pesanan,User,Role])],
   controllers: [TokoController],
   providers: [TokoService]
 })
