@@ -72,9 +72,12 @@ export class ProdukService {
     return await queryBuilder.getMany();
   }
 
-  findAll() {
-    return this.produkRepository.findAndCount();
+  async findAll() {
+    return this.produkRepository.findAndCount({
+      relations: ['kategori'], // tambahkan relasi kategori di sini
+    });
   }
+  
 
   async searchProduk(nama_produk: string): Promise<Produk[]> {
     return await this.produkRepository

@@ -85,7 +85,7 @@ export class ProdukController {
   @Get('all')
   async findAll() {
     const [data, count] = await this.produkService.findAll();
-
+  
     return {
       data,
       count,
@@ -93,6 +93,7 @@ export class ProdukController {
       message: 'success',
     };
   }
+  
 
   @Get('count')
   async getAllProduk(): Promise<{ jumlahProduk: number }> {

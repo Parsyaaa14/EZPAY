@@ -21,7 +21,11 @@ export class AuthService {
     console.log('JWT_SECRET:', this.jwtSecret);  // Log untuk memastikan JWT_SECRET terbaca
   }
 
-  async loginForKasir(email: string, password: string): Promise<{ access_token?: string, redirectUrl?: string, alert?: string }> {
+  async loginForKasir(
+    email: string, 
+    password: string
+  ): Promise<{ access_token?: string, redirectUrl?: string, alert?: string }> {
+    
     const user = await this.usersRepository.findOne({
       where: { email },
       relations: ['role'], // Ensure role is loaded
@@ -41,11 +45,11 @@ export class AuthService {
       throw new UnauthorizedException('Akses ditolak: Akun Anda sedang tidak aktif');
     }
   
-    // Jika password yang diinput adalah default '123456', arahkan user ke endpoint edit-kasir
+    // Jika password yang diinput adalah default '123456', arahkan user ke endpoint edit-password
     if (password === '123456' && !user.password.includes('$2b$')) {
       return {
         alert: 'Anda perlu mengubah password Anda',
-        redirectUrl: `http://localhost:3222/users/edit-password/${user.id_user}`,
+        redirectUrl: `/edit_password_kasir?id=${user.id_user}`, // Menggunakan path yang benar
       };
     }
   
