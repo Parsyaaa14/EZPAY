@@ -8,7 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { levelMasterData } from './data/role';
 import { levelMasterData2 } from './data/kategori';
 import { Role } from 'src/role/entities/role.entity';
-import { Kategori } from 'src/kategori/entities/kategori.entity';
+// import { Kategori } from 'src/kategori/entities/kategori.entity';
 // import { Produk } from '#/produk/entities/produk.entity';
 import { Pesanan } from 'src/pesanan/entities/pesanan.entity';
 import { Toko } from 'src/toko/entities/toko.entity';
@@ -63,7 +63,7 @@ export class SeederService implements OnApplicationBootstrap {
 
   async seeder() {
     await this.insertIfNotExist(Role, levelMasterData);
-    await this.insertIfNotExist(Kategori, levelMasterData2);
+    // await this.insertIfNotExist(Kategori, levelMasterData2);
     // await this.insertIfNotExist(User, levelMasterData3);
     // await this.insertIfNotExist(Produk, levelMasterData4)
     await this.insertIfNotExist(Pesanan, levelMasterData5)
