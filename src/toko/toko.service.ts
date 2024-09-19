@@ -88,12 +88,44 @@ export class TokoService {
       admin: newAdmin,
     };
   }
+
+  async getApprovedTokoWithUser() {
+    return this.tokoRepository
+      .createQueryBuilder('toko')
+      .leftJoinAndSelect('toko.user', 'user')
+      .where('toko.status = :status', { status: 'approved' })
+      .getMany();
+  }
   
 
   // Method untuk SuperAdmin approve/reject toko
+  // async approveToko(id_toko: string, status: StatusToko) {
+  //   const toko = await this.tokoRepository.findOne({
+  //     where: { id_toko },});
+
+  //   if (!toko) {
+  //     throw new BadRequestException('Toko tidak ditemukan');
+  //   }
+
+  //   if (status !== StatusToko.APPROVED && status !== StatusToko.REJECTED) {
+  //     throw new BadRequestException('Status tidak valid');
+  //   }
+
+  //   toko.status = status;
+  //   await this.tokoRepository.save(toko);
+
+  //   return {
+  //     message: `Toko ${toko.nama_toko} berhasil di-${
+  //       status === StatusToko.APPROVED ? 'approve' : 'reject'
+  //     }`,
+  //   };
+  // }
+
   async approveToko(id_toko: string, status: StatusToko) {
     const toko = await this.tokoRepository.findOne({
-      where: { id_toko },});
+      where: { id_toko },
+      relations: ['user'], // Pastikan relasi dengan User diambil
+    });
 
     if (!toko) {
       throw new BadRequestException('Toko tidak ditemukan');
@@ -110,6 +142,14 @@ export class TokoService {
       message: `Toko ${toko.nama_toko} berhasil di-${
         status === StatusToko.APPROVED ? 'approve' : 'reject'
       }`,
+      toko: {
+        ...toko,
+        pemilik: {
+          nama_user: toko.user.nama,
+          email: toko.user.email,
+          no_handphone: toko.user.no_handphone,
+        },
+      },
     };
   }
 

@@ -29,24 +29,29 @@ export class TokoController {
     }
   }
 
-  // Endpoint untuk meng-approve toko
-  @Put(':id_toko/approve')
-  async approveToko(
-    @Param('id_toko') idToko: string,
-    @Body() body: { status: StatusToko },
-  ) {
-    const { status } = body;
-    if (status !== StatusToko.APPROVED && status !== StatusToko.REJECTED) {
-      throw new BadRequestException('Status tidak valid');
-    }
-    
-    const result = await this.tokoService.approveToko(idToko, status);
-    if (!result) {
-      throw new NotFoundException('Toko tidak ditemukan');
-    }
-    
-    return result;
+  @Get('approved/with-user')
+  async getApprovedTokoWithUser() {
+    return this.tokoService.getApprovedTokoWithUser();
   }
+
+  // Endpoint untuk meng-approve toko
+  // @Put(':id_toko/approve')
+  // async approveToko(
+  //   @Param('id_toko') idToko: string,
+  //   @Body() body: { status: StatusToko },
+  // ) {
+  //   const { status } = body;
+  //   if (status !== StatusToko.APPROVED && status !== StatusToko.REJECTED) {
+  //     throw new BadRequestException('Status tidak valid');
+  //   }
+    
+  //   const result = await this.tokoService.approveToko(idToko, status);
+  //   if (!result) {
+  //     throw new NotFoundException('Toko tidak ditemukan');
+  //   }
+    
+  //   return result;
+  // }
 
   // Endpoint untuk menolak toko
   @Put(':id_toko/reject')
