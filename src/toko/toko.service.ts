@@ -126,6 +126,13 @@ export class TokoService {
       message: `Toko ${toko.nama_toko} berhasil di-set ke status pending`,
     };
   }
+  async getPendingRegistrations() {
+    return this.tokoRepository.find({ where: { status: StatusToko.PENDING } });
+  }
+  async getApprovedToko(): Promise<Toko[]> {
+    return this.tokoRepository.find({ where: { status: StatusToko.APPROVED } });
+  }
+  
 }
 
 // import { Injectable } from '@nestjs/common';
@@ -164,9 +171,7 @@ export class TokoService {
 //   //   return this.tokoRepository.save(newToko);
 //   // }
 
-//   async getPendingRegistrations() {
-//     return this.tokoRepository.find({ where: { status: StatusToko.PENDING } });
-//   }
+
 
 //   async approveRegistration(id: number) {
 //     return this.tokoRepository.update(id, { status: StatusToko.APPROVED });
@@ -176,7 +181,5 @@ export class TokoService {
 //     return this.tokoRepository.update(id, { status: StatusToko.REJECTED });
 //   }
 
-//   async getApprovedToko(): Promise<Toko[]> {
-//     return this.tokoRepository.find({ where: { status: StatusToko.APPROVED } });
-//   }
+
 // }

@@ -129,8 +129,6 @@ export class UsersService {
   }
   
   
-  
-
   async editKasir(id: string, editKasirDto: EditKasirDto): Promise<User> {
     const { nama, email, status, password } = editKasirDto;
 

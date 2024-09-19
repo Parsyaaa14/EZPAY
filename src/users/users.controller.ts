@@ -118,13 +118,12 @@ export class UsersController {
     // Panggil service untuk mengupdate kasir berdasarkan id
     return this.usersService.editAdmin(id, editUserDto);
   }
-
   @Patch('edit-password/:id')
   async editPassword(
     @Param('id') id: string,
-    @Body() editPasswordDto: EditPasswordDto,
-  ): Promise<User> {
-    return this.usersService.editPassword(id, editPasswordDto);
+    @Body() editKasirDto: EditKasirDto,
+  ) {
+    return this.usersService.editKasir(id, editKasirDto);
   }
 
   @Delete(':id')
