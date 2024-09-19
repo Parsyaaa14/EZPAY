@@ -36,6 +36,11 @@ export class AuthService {
       throw new UnauthorizedException('Akses ditolak: Anda bukan kasir');
     }
   
+    // Cek apakah status kasir adalah INACTIVE
+    if (user.status === 'tidak aktif') {
+      throw new UnauthorizedException('Akses ditolak: Akun Anda sedang tidak aktif');
+    }
+  
     // Jika password yang diinput adalah default '123456', arahkan user ke endpoint edit-kasir
     if (password === '123456' && !user.password.includes('$2b$')) {
       return {

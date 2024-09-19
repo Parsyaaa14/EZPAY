@@ -19,9 +19,14 @@ import { MetodeTransaksiModule } from './metode_transaksi/metode_transaksi.modul
 import { DetilProdukPesananModule } from './detil_produk_pesanan/detil_produk_pesanan.module';
 import { AuthModule } from './auth/auth.module';
 import { User } from './users/entities/user.entity';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'), // Lokasi folder gambar
+    }),
     LoggerModule.forRoot({
       pinoHttp: {
         base: undefined,

@@ -32,7 +32,8 @@ export class ProdukController {
   @UseInterceptors(
     FileInterceptor('gambar_produk', {
       storage: diskStorage({
-        destination: './src/produk/gambar_produk',
+        // destination: './src/produk/gambar_produk',
+        destination: './public/gambar_produk',
         filename: (req, file, cb) => {
           const uniqueName = `${Date.now()}${extname(file.originalname)}`;
           cb(null, uniqueName);
