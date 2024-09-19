@@ -21,41 +21,43 @@ export class AuthService {
     console.log('JWT_SECRET:', this.jwtSecret);  // Log untuk memastikan JWT_SECRET terbaca
   }
 
-  async loginForKasir(email: string, password: string): Promise<{ access_token: string }> {
+  async loginForKasir(email: string, password: string): Promise<{ access_token?: string, redirectUrl?: string, alert?: string }> {
     const user = await this.usersRepository.findOne({
       where: { email },
       relations: ['role'], // Ensure role is loaded
     });
-
+  
     if (!user) {
       throw new UnauthorizedException('Email tidak ditemukan');
     }
-
-    // Verifikasi password
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      throw new UnauthorizedException('Password salah');
-    }
-
+  
     // Cek apakah role adalah 'kasir'
     if (user.role.nama !== 'Kasir') {
       throw new UnauthorizedException('Akses ditolak: Anda bukan kasir');
     }
-
+  
+    // Jika password yang diinput adalah default '123456', arahkan user ke endpoint edit-kasir
+    if (password === '123456' && !user.password.includes('$2b$')) {
+      return {
+        alert: 'Anda perlu mengubah password Anda',
+        redirectUrl: `http://localhost:3222/users/edit-password/${user.id_user}`,
+      };
+    }
+  
+    // Jika password sudah diubah, hash password-nya
+    const isMatch = await bcrypt.compare(password, user.password);
+  
+    if (!isMatch) {
+      throw new UnauthorizedException('Password salah');
+    }
+  
     // Buat payload JWT
     const payload = { email: user.email, sub: user.id_user };
-
-    // Generate token JWT
     const access_token = this.jwtService.sign(payload);
-
-    // Pengecekan tambahan jika diperlukan
-    if (access_token) {
-      console.log(`User ${user.email} berhasil login dengan role kasir.`);
-    }
-
+  
     return { access_token };
   }
+  
 
   async validateToko(email: string, password: string) {
     const toko = await this.tokoRepository.findOne({ where: { email } });

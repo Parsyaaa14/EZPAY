@@ -1,6 +1,11 @@
-import { MinLength } from "class-validator";
+import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
 
 export class EditPasswordDto {
-    @MinLength(8, { message: 'Password should be at least 8 characters long' })
-    newPassword: string;
-  }
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @IsNotEmpty()
+  @MinLength(6)
+  password: string;
+}

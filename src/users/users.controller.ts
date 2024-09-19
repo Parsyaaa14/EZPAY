@@ -6,6 +6,7 @@ import {
   Put,
   Param,
   Delete,
+  Patch,
   ParseUUIDPipe,
   HttpStatus,
   NotFoundException,
@@ -18,6 +19,7 @@ import { EditUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { CreateUserKasirDto } from './dto/create-usir-kasir.dto';
 import { EditKasirDto } from './dto/update-kasir-dto';
+import { EditPasswordDto } from './dto/edit-password.dto';
 
 @Controller('users')
 export class UsersController {
@@ -115,6 +117,14 @@ export class UsersController {
   ): Promise<User> {
     // Panggil service untuk mengupdate kasir berdasarkan id
     return this.usersService.editAdmin(id, editUserDto);
+  }
+
+  @Patch('edit-password/:id')
+  async editPassword(
+    @Param('id') id: string,
+    @Body() editPasswordDto: EditPasswordDto,
+  ): Promise<User> {
+    return this.usersService.editPassword(id, editPasswordDto);
   }
 
   @Delete(':id')

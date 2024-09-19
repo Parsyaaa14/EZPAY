@@ -14,6 +14,7 @@ import * as crypto from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { Role } from 'src/role/entities/role.entity';
 import { EditKasirDto } from './dto/update-kasir-dto';
+import { EditPasswordDto } from './dto/edit-password.dto';
 import { CreateUserKasirDto } from './dto/create-usir-kasir.dto';
 
 @Injectable()
@@ -42,32 +43,30 @@ export class UsersService {
       return crypto.randomBytes(16).toString('hex');
     }
   
-
-  async tambahKasir(createUserKasirDto: CreateUserKasirDto): Promise<User> {
-    // Default password
-    const password = '123456';
-    const salt = this.generateSalt();
-
-    // Get the 'Admin' role
-    const role = await this.roleRepository.findOne({
-      where: { nama: 'Kasir' },
-    });
-
-    if (!role) {
-      throw new Error('Role Ksir not found');
+    async tambahKasir(createUserKasirDto: CreateUserKasirDto): Promise<User> {
+      // Default password
+      const password = '123456'; // Keep default password as plaintext
+        
+      // Get the 'Kasir' role
+      const role = await this.roleRepository.findOne({
+        where: { nama: 'Kasir' },
+      });
+    
+      if (!role) {
+        throw new Error('Role Kasir not found');
+      }
+    
+      // Create a new user using the DTO
+      const user = this.usersRepository.create({
+        ...createUserKasirDto,
+        password, // Save the default password as plaintext
+        salt: '',  // No salt needed for plaintext password
+        role,     // Assign the Kasir role
+      });
+    
+      return this.usersRepository.save(user);
     }
-
-    // Create a new user using the DTO
-    const user = this.usersRepository.create({
-      ...createUserKasirDto,
-      password, // Save the default password
-      salt,     // Save the generated salt
-      role,     // Assign the Admin role
-    });
-
-    return this.usersRepository.save(user);
-  }
-
+    
 
   async tambahAdmin(createUserDto: CreateUserDto): Promise<User> {
     // Default password
@@ -153,6 +152,32 @@ export class UsersService {
     if (password) {
       const salt = await bcrypt.genSalt(); // Generate salt baru
       user.salt = salt;
+      user.password = await bcrypt.hash(password, salt);
+    }
+
+    // Simpan perubahan
+    return await this.usersRepository.save(user);
+  }
+
+
+  async editPassword(id: string, editPasswordDto: EditPasswordDto): Promise<User> {
+    const { email, password } = editPasswordDto;
+
+    // Cari user berdasarkan id
+    const user = await this.usersRepository.findOne({
+      where: { id_user: id },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User dengan id "${id}" tidak ditemukan`);
+    }
+
+    // Update email jika diberikan
+    if (email) user.email = email;
+
+    // Jika password diberikan, buat salt baru dan hash password-nya
+    if (password) {
+      const salt = await bcrypt.genSalt();
       user.password = await bcrypt.hash(password, salt);
     }
 
