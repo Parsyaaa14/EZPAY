@@ -176,7 +176,13 @@ export class TokoService {
       relations: ['user'], // Hubungkan dengan tabel user
     });
   }
-  
+  async approveRegistration(id: number) {
+    return this.tokoRepository.update(id, { status: StatusToko.APPROVED });
+  }
+
+  async rejectRegistration(id: number) {
+    return this.tokoRepository.update(id, { status: StatusToko.REJECTED });
+  }
   
 }
 
@@ -218,13 +224,7 @@ export class TokoService {
 
 
 
-//   async approveRegistration(id: number) {
-//     return this.tokoRepository.update(id, { status: StatusToko.APPROVED });
-//   }
 
-//   async rejectRegistration(id: number) {
-//     return this.tokoRepository.update(id, { status: StatusToko.REJECTED });
-//   }
 
 
 // }
