@@ -1,4 +1,4 @@
-import { Controller, Patch, Param, Body, BadRequestException, Post, ConflictException, Put, NotFoundException } from '@nestjs/common';
+import { Controller, Patch, Param, Body, BadRequestException, Post, ConflictException, Put,Get, NotFoundException } from '@nestjs/common';
 import { TokoService } from './toko.service'; // Import service Toko
 import { StatusToko } from './entities/toko.entity'; // Import enum StatusToko
 import { CreateUserDto } from './dto/admin.dto';
@@ -63,6 +63,17 @@ export class TokoController {
   ) {
     return this.tokoService.setPendingToko(id_toko);
   }
+  @Get('daftar')
+  async getRegistrations() {
+    return this.tokoService.getPendingRegistrations();
+  }
+  @Get('approved')
+  async getApprovedToko() {
+    const tokos = await this.tokoService.getApprovedToko();
+    console.log(tokos); // Periksa output di konsol
+    return tokos;
+  }
+  
 }
 
 
@@ -123,10 +134,7 @@ export class TokoController {
 //   //   }
 //   // }
 
-//   @Get('daftar')
-//   async getRegistrations() {
-//     return this.tokoService.getPendingRegistrations();
-//   }
+
 
 //   @Patch('register/:id/approve')
 
@@ -139,8 +147,5 @@ export class TokoController {
 //     return this.tokoService.rejectRegistration(id);
 //   }
 
-//   @Get('approved')
-//   async getApprovedToko() {
-//     return this.tokoService.getApprovedToko();
-//   }
+
 // }

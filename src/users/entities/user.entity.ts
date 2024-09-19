@@ -18,7 +18,6 @@ import { Pesanan } from '../../pesanan/entities/pesanan.entity';
 import { Transaksi } from '../../transaksi/entities/transaksi.entity';
 import { Toko } from '../../toko/entities/toko.entity';
 import * as crypto from 'crypto';
-import * as bcrypt from 'bcrypt';
 // import  { v4 as uuidv4 } from 'uuid';
 
 
