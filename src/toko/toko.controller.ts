@@ -73,7 +73,6 @@ export class TokoController {
     console.log(tokos); // Periksa output di konsol
     return tokos;
   }
-  
 }
 
 

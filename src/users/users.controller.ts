@@ -81,6 +81,7 @@ export class UsersController {
         data: kasirUsers.map(user => ({
           id_kasir: user.id_user, // Sesuaikan dengan atribut Anda
           nama_kasir: user.nama,
+          email_kasir: user.email,
           status: user.status,
         })),
       };
