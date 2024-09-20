@@ -61,13 +61,18 @@ export class TokoController {
     return this.tokoService.approveToko(id_toko, StatusToko.REJECTED);
   }
 
-  // Endpoint untuk mengatur status toko ke pending
-  @Put(':id_toko/set-pending')
-  async setPendingToko(
-    @Param('id_toko') id_toko: string
-  ) {
-    return this.tokoService.setPendingToko(id_toko);
+  @Get('pending')
+  async getPendingToko() {
+    return this.tokoService.getTokoByStatus('pending');
   }
+
+  // Endpoint untuk mengatur status toko ke pending
+  // @Put(':id_toko/set-pending')
+  // async setPendingToko(
+  //   @Param('id_toko') id_toko: string
+  // ) {
+  //   return this.tokoService.setPendingToko(id_toko);
+  // }
   @Get('daftar')
   async getRegistrations() {
     return this.tokoService.getPendingRegistrations();

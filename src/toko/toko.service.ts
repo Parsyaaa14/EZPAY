@@ -153,6 +153,13 @@ export class TokoService {
     };
   }
 
+  async getTokoByStatus(status: any) {
+    return this.tokoRepository.find({
+      where: { status }, // Filter berdasarkan status
+      relations: ['user'], // Pastikan relasi dengan user diambil
+    });
+  }
+
   async setPendingToko(id_toko: string) {
     const toko = await this.tokoRepository.findOne({ where: { id_toko },});
 
