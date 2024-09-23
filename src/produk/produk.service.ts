@@ -108,40 +108,36 @@ export class ProdukService {
     }
   }
 
-  async updateProduk(nama_produk: string, updateProdukDto: UpdateProdukDto): Promise<Produk> {
-    const { nama, ...updateData } = updateProdukDto;
+  async updateProduk(id_produk: string, updateProdukDto: UpdateProdukDto): Promise<Produk> {
+    const { nama: namaKategori, ...updateData } = updateProdukDto;
 
-    // Cari produk berdasarkan nama produk
-    const produk = await this.produkRepository.findOne({ where: { nama_produk } });
+    // Cari produk berdasarkan ID
+    const produk = await this.produkRepository.findOne({ where: { id_produk } });
 
     if (!produk) {
-      throw new NotFoundException(`Produk dengan nama ${nama_produk} tidak ditemukan`);
+        throw new NotFoundException(`Produk dengan ID ${id_produk} tidak ditemukan`);
     }
 
     // Jika nama kategori di-update, pastikan kategori tersebut ada
-    if (nama) {
-      const kategori = await this.kategoriRepository.findOne({
-        where: { nama: nama },
-      });
+    if (namaKategori) {
+        const kategori = await this.kategoriRepository.findOne({
+            where: { nama: namaKategori },
+        });
 
-      if (!kategori) {
-        throw new NotFoundException(`Kategori dengan nama ${nama} tidak ditemukan`);
-      }
+        if (!kategori) {
+            throw new NotFoundException(`Kategori dengan nama ${namaKategori} tidak ditemukan`);
+        }
 
-      produk.kategori = kategori;
+        produk.kategori = kategori;
     }
 
     // Update produk dengan data baru
     Object.assign(produk, updateData);
 
-    // Generate kode_produk secara otomatis
-    produk.kode_produk = this.generateRandomCode();
-
-    // produk.status_produk = !produk.status_produk;
-
-
     return this.produkRepository.save(produk);
-  }
+}
+
+
 
   private generateRandomCode(): string {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; // Huruf dan angka

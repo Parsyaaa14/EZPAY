@@ -13,6 +13,7 @@ import {
   UploadedFile,
   Query,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { ProdukService } from './produk.service';
 import { CreateProdukDto } from './dto/create-produk.dto';
@@ -21,7 +22,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
 import { diskStorage } from 'multer';
 import { Produk } from './entities/produk.entity';
-
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Controller('produk')
 export class ProdukController {
@@ -32,7 +34,6 @@ export class ProdukController {
   @UseInterceptors(
     FileInterceptor('gambar_produk', {
       storage: diskStorage({
-        // destination: './src/produk/gambar_produk',
         destination: './public/gambar_produk',
         filename: (req, file, cb) => {
           const uniqueName = `${Date.now()}${extname(file.originalname)}`;
@@ -43,14 +44,14 @@ export class ProdukController {
         const allowTypes = ['image/png', 'image/jpg', 'image/jpeg'];
         if (!allowTypes.includes(file.mimetype)) {
           return cb(
-            new HttpException('invalid file type', HttpStatus.BAD_REQUEST),
+            new HttpException('Invalid file type', HttpStatus.BAD_REQUEST),
             false,
           );
         }
         cb(null, true);
       },
       limits: {
-        fileSize: 1024 * 1024 * 5, // maks 5 mb
+        fileSize: 1024 * 1024 * 5, // Maks 5 MB
       },
     }),
   )
@@ -64,7 +65,7 @@ export class ProdukController {
       }
       return await this.produkService.createProduk(createProdukDto);
     } catch (error) {
-      throw new Error(`error membuat produk : ${error.messege}`);
+      throw new Error(`Error membuat produk : ${error.message}`);
     }
   }
 
@@ -141,24 +142,54 @@ export class ProdukController {
   // }
 
   @Put(':nama_produk')
-  @UseInterceptors(FileInterceptor('gambar_produk', {
-    storage: diskStorage({
-      destination: './uploads',
-      filename: (req, file, callback) => {
-        const filename = `${Date.now()}${extname(file.originalname)}`;
-        callback(null, filename);
+  @UseInterceptors(
+    FileInterceptor('gambar_produk', {
+      storage: diskStorage({
+        // destination: './src/produk/gambar_produk',
+        destination: './public/gambar_produk',
+        filename: (req, file, cb) => {
+          const uniqueName = `${Date.now()}${extname(file.originalname)}`;
+          cb(null, uniqueName);
+        },
+      }),
+      fileFilter: (req, file, cb) => {
+        const allowTypes = ['image/png', 'image/jpg', 'image/jpeg'];
+        if (!allowTypes.includes(file.mimetype)) {
+          return cb(
+            new HttpException('invalid file type', HttpStatus.BAD_REQUEST),
+            false,
+          );
+        }
+        cb(null, true);
+      },
+      limits: {
+        fileSize: 1024 * 1024 * 5, // maks 5 mb
       },
     }),
-  }))
+  )
   async updateProduk(
     @Param('nama_produk') nama_produk: string,
     @Body() updateProdukDto: UpdateProdukDto,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<Produk> {
     try {
-      if (file) {
-        updateProdukDto.gambar_produk = file.filename; // Simpan nama file
+      const produk = await this.produkService.findOne(nama_produk); // Find the product by its name or ID
+  
+      if (!produk) {
+        throw new NotFoundException('Produk tidak ditemukan');
       }
+  
+      // Jika ada file gambar baru, hapus gambar lama dan perbarui gambar di DTO
+      if (file) {
+        if (produk.gambar_produk) {
+          const oldImagePath = path.join(__dirname, '..', 'uploads/gambar_produk', produk.gambar_produk);
+          if (fs.existsSync(oldImagePath)) {
+            fs.unlinkSync(oldImagePath); // Hapus gambar lama
+          }
+        }
+        updateProdukDto.gambar_produk = file.filename; // Simpan nama file baru
+      }
+  
       return await this.produkService.updateProduk(nama_produk, updateProdukDto);
     } catch (error) {
       throw new HttpException(
@@ -167,6 +198,7 @@ export class ProdukController {
       );
     }
   }
+  
 
   @Delete(':id')
   async remove(@Param('id', ParseUUIDPipe) id: string) {
