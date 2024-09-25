@@ -14,6 +14,7 @@ import {
   Query,
   BadRequestException,
   NotFoundException,
+  Res,
 } from '@nestjs/common';
 import { ProdukService } from './produk.service';
 import { CreateProdukDto } from './dto/create-produk.dto';
@@ -24,17 +25,20 @@ import { diskStorage } from 'multer';
 import { Produk } from './entities/produk.entity';
 import * as fs from 'fs';
 import * as path from 'path';
+import { join } from 'path/posix';
+import { of } from 'rxjs';
 
 @Controller('produk')
 export class ProdukController {
   produkRepository: any;
   constructor(private readonly produkService: ProdukService) {}
 
+
   @Post()
   @UseInterceptors(
     FileInterceptor('gambar_produk', {
       storage: diskStorage({
-        destination: './public/gambar_produk',
+        destination: './uploads/products',
         filename: (req, file, cb) => {
           const uniqueName = `${Date.now()}${extname(file.originalname)}`;
           cb(null, uniqueName);
@@ -69,6 +73,12 @@ export class ProdukController {
     }
   }
 
+  // @Public()
+  @Get('/image/:image')
+  getImage(@Param('image') image: string, @Res() res: any){
+    return of(res.sendFile(join(process.cwd(), `uploads/products/${image}`)));
+  }
+
   @Get('filter-stok')
   async filterProduk(): Promise<Produk[]> {
     return this.produkService.filterProdukMinStok();
@@ -86,7 +96,7 @@ export class ProdukController {
   @Get('all')
   async findAll() {
     const [data, count] = await this.produkService.findAll();
-  
+
     return {
       data,
       count,
@@ -94,7 +104,6 @@ export class ProdukController {
       message: 'success',
     };
   }
-  
 
   @Get('count')
   async getAllProduk(): Promise<{ jumlahProduk: number }> {
@@ -110,7 +119,9 @@ export class ProdukController {
     return await this.produkService.getProdukByHarga(sort, kategori);
   }
   @Get('search')
-  async searchProduk(@Query('nama_produk') nama_produk: string): Promise<Produk[]> {
+  async searchProduk(
+    @Query('nama_produk') nama_produk: string,
+  ): Promise<Produk[]> {
     return this.produkService.searchProduk(nama_produk);
   }
 
@@ -146,7 +157,7 @@ export class ProdukController {
     FileInterceptor('gambar_produk', {
       storage: diskStorage({
         // destination: './src/produk/gambar_produk',
-        destination: './public/gambar_produk',
+        destination: './uploads/products',
         filename: (req, file, cb) => {
           const uniqueName = `${Date.now()}${extname(file.originalname)}`;
           cb(null, uniqueName);
@@ -174,23 +185,31 @@ export class ProdukController {
   ): Promise<Produk> {
     try {
       const produk = await this.produkService.findOne(nama_produk); // Find the product by its name or ID
-  
+
       if (!produk) {
         throw new NotFoundException('Produk tidak ditemukan');
       }
-  
+
       // Jika ada file gambar baru, hapus gambar lama dan perbarui gambar di DTO
       if (file) {
         if (produk.gambar_produk) {
-          const oldImagePath = path.join(__dirname, '..', 'uploads/gambar_produk', produk.gambar_produk);
+          const oldImagePath = path.join(
+            __dirname,
+            '..',
+            'uploads/products/',
+            produk.gambar_produk,
+          );
           if (fs.existsSync(oldImagePath)) {
             fs.unlinkSync(oldImagePath); // Hapus gambar lama
           }
         }
         updateProdukDto.gambar_produk = file.filename; // Simpan nama file baru
       }
-  
-      return await this.produkService.updateProduk(nama_produk, updateProdukDto);
+
+      return await this.produkService.updateProduk(
+        nama_produk,
+        updateProdukDto,
+      );
     } catch (error) {
       throw new HttpException(
         `Gagal memperbarui produk: ${error.message}`,
@@ -198,16 +217,13 @@ export class ProdukController {
       );
     }
   }
-  
 
   @Delete(':id')
   async remove(@Param('id', ParseUUIDPipe) id: string) {
     await this.produkService.remove(id);
-
     return {
       statusCode: HttpStatus.OK,
       message: 'success',
     };
   }
-
 }
