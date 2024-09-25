@@ -71,45 +71,46 @@ export class AuthService {
   async validateToko(email: string, password: string) {
     // Cari user berdasarkan email
     const user = await this.usersRepository.findOne({ where: { email } });
-
+  
     if (!user) {
       throw new UnauthorizedException('Akun tidak ditemukan');
     }
-
+  
     // Validasi password user
     const passwordIsValid = await bcrypt.compare(password, user.password);
     if (!passwordIsValid) {
       throw new UnauthorizedException('Password salah');
     }
-
+  
     // Cari toko yang terkait dengan user tersebut, gunakan user.id_user
     const toko = await this.tokoRepository.findOne({ where: { user: { id_user: user.id_user } } });
-
+  
     if (!toko) {
       throw new UnauthorizedException('Toko tidak ditemukan untuk user ini');
     }
-
+  
     // Cek status toko
     if (toko.status === StatusToko.PENDING) {
       throw new ForbiddenException('Mohon menunggu konfirmasi sistem');
     }
-
+  
     if (toko.status === StatusToko.REJECTED) {
-      return { redirect: '/rejected-page' };
+      // Kembalikan respons untuk redirect ke halaman lain
+      return { redirect: '/toko-rejected-page' }; // Ganti '/toko-rejected-page' dengan path yang sesuai
     }
-
+  
     // Generate JWT token
     const payload = { email: user.email, sub: user.id_user };
     const accessToken = this.jwtService.sign(payload);
-
+  
     // Tambahkan log atau tindakan lain setelah login berhasil
     if (accessToken) {
       console.log(`Toko ${toko.nama_toko} berhasil login dengan status ${toko.status}`);
     }
-
+  
     return { message: 'Login berhasil', accessToken };
   }
-
+  
 
   async loginForSuperadmin(email: string, password: string): Promise<{ access_token: string }> {
     const user = await this.usersRepository.findOne({

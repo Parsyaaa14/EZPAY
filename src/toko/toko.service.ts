@@ -75,7 +75,7 @@ export class TokoService {
       nama_toko,
       alamat_toko,
       deskripsi_toko,
-      foto,
+      foto, // Menyimpan nama file yang diunggah
       status: StatusToko.PENDING, // Status toko default adalah PENDING
       user: newAdmin, // Hubungkan toko dengan admin yang baru dibuat
     });
@@ -88,6 +88,7 @@ export class TokoService {
       admin: newAdmin,
     };
   }
+  
 
   async getApprovedTokoWithUser() {
     return this.tokoRepository
@@ -96,31 +97,8 @@ export class TokoService {
       .where('toko.status = :status', { status: 'approved' })
       .getMany();
   }
-  
 
   // Method untuk SuperAdmin approve/reject toko
-  // async approveToko(id_toko: string, status: StatusToko) {
-  //   const toko = await this.tokoRepository.findOne({
-  //     where: { id_toko },});
-
-  //   if (!toko) {
-  //     throw new BadRequestException('Toko tidak ditemukan');
-  //   }
-
-  //   if (status !== StatusToko.APPROVED && status !== StatusToko.REJECTED) {
-  //     throw new BadRequestException('Status tidak valid');
-  //   }
-
-  //   toko.status = status;
-  //   await this.tokoRepository.save(toko);
-
-  //   return {
-  //     message: `Toko ${toko.nama_toko} berhasil di-${
-  //       status === StatusToko.APPROVED ? 'approve' : 'reject'
-  //     }`,
-  //   };
-  // }
-
   async approveToko(id_toko: string, status: StatusToko) {
     const toko = await this.tokoRepository.findOne({
       where: { id_toko },
@@ -161,7 +139,7 @@ export class TokoService {
   }
 
   async setPendingToko(id_toko: string) {
-    const toko = await this.tokoRepository.findOne({ where: { id_toko },});
+    const toko = await this.tokoRepository.findOne({ where: { id_toko } });
 
     if (!toko) {
       throw new BadRequestException('Toko tidak ditemukan');
@@ -174,15 +152,18 @@ export class TokoService {
       message: `Toko ${toko.nama_toko} berhasil di-set ke status pending`,
     };
   }
+
   async getPendingRegistrations() {
     return this.tokoRepository.find({ where: { status: StatusToko.PENDING } });
   }
+
   async getApprovedToko(): Promise<Toko[]> {
     return this.tokoRepository.find({
       where: { status: StatusToko.APPROVED },
       relations: ['user'], // Hubungkan dengan tabel user
     });
   }
+
   async approveRegistration(id: number) {
     return this.tokoRepository.update(id, { status: StatusToko.APPROVED });
   }
@@ -190,48 +171,4 @@ export class TokoService {
   async rejectRegistration(id: number) {
     return this.tokoRepository.update(id, { status: StatusToko.REJECTED });
   }
-  
 }
-
-// import { Injectable } from '@nestjs/common';
-// import { DaftarDto } from './dto/daftar.dto';
-// // import { UpdateTokoDto } from './dto/update-toko.dto';
-// import { InjectRepository } from '@nestjs/typeorm';
-// import { Repository } from 'typeorm';
-// import { StatusToko, Toko } from './entities/toko.entity';
-// import * as bcrypt from 'bcrypt';
-
-// @Injectable()
-// export class TokoService {
-//   constructor(
-//     @InjectRepository(Toko)
-//     private tokoRepository: Repository<Toko>,
-//   ) {}
-
-//   // async registerToko(daftarDto: DaftarDto) {
-//   //   const { nama, email, no_handphone, password, nama_toko, deskripsi_toko, alamat_toko, foto } = daftarDto;
-
-//   //   // Hash password
-//   //   const hashedPassword = await bcrypt.hash(password, 10);
-
-//   //   const newToko = this.tokoRepository.create({
-//   //     nama,
-//   //     email,
-//   //     no_handphone,
-//   //     password: hashedPassword,
-//   //     nama_toko,
-//   //     deskripsi_toko,
-//   //     alamat_toko,
-//   //     foto,
-//   //     status: StatusToko.PENDING, // Set status to pending
-//   //   });
-
-//   //   return this.tokoRepository.save(newToko);
-//   // }
-
-
-
-
-
-
-// }
