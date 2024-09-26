@@ -156,11 +156,10 @@ export class ProdukController {
   @UseInterceptors(
     FileInterceptor('gambar_produk', {
       storage: diskStorage({
-        // destination: './src/produk/gambar_produk',
-        destination: './uploads/products',
+        destination: './uploads/products', // The destination for uploaded images
         filename: (req, file, cb) => {
-          const uniqueName = `${Date.now()}${extname(file.originalname)}`;
-          cb(null, uniqueName);
+          const fileName = `${Date.now()}-${file.originalname}`;
+          cb(null, fileName);
         },
       }),
       fileFilter: (req, file, cb) => {
@@ -179,12 +178,12 @@ export class ProdukController {
     }),
   )
   async updateProduk(
-    @Param('nama_produk') nama_produk: string,
+    @Param('nama_produk') id_produk: string,
     @Body() updateProdukDto: UpdateProdukDto,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<Produk> {
     try {
-      const produk = await this.produkService.findOne(nama_produk); // Find the product by its name or ID
+      const produk = await this.produkService.findOne(id_produk); // Find the product by its name or ID
 
       if (!produk) {
         throw new NotFoundException('Produk tidak ditemukan');
@@ -207,7 +206,7 @@ export class ProdukController {
       }
 
       return await this.produkService.updateProduk(
-        nama_produk,
+        id_produk,
         updateProdukDto,
       );
     } catch (error) {
