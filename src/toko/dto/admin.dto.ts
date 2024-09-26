@@ -9,7 +9,6 @@ export class CreateUserDto {
   @IsNotEmpty()
   email: string;
 
-  @IsPhoneNumber('ID') // 'ID' untuk Indonesia, sesuaikan dengan negara
   @IsNotEmpty()
   no_handphone: string;
 
