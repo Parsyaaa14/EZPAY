@@ -20,8 +20,15 @@ export class AuthController {
   @Post('login/')
   async validateToko(@Body() validateTokoDto: ValidateTokoDto) {
     const { email, password } = validateTokoDto;
-    return this.authService.validateToko(email, password);
+    const result = await this.authService.validateToko(email, password);
+  
+    if (result.redirect) {
+      return { redirectUrl: result.redirect }; // Jika toko ditolak, berikan URL redirect ke frontend
+    }
+  
+    return result; // Jika login berhasil atau status pending
   }
+  
 
   @Post('login/superadmin')
   async loginForSuperadmin(@Body() body: { email: string; password: string }) {

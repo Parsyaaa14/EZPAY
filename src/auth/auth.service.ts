@@ -91,11 +91,10 @@ export class AuthService {
   
     // Cek status toko
     if (toko.status === StatusToko.PENDING) {
-      throw new ForbiddenException('Mohon menunggu konfirmasi sistem');
+      throw new ForbiddenException('Akun Anda masih dalam proses persetujuan. Harap tunggu.');
     }
   
     if (toko.status === StatusToko.REJECTED) {
-      // Kembalikan respons untuk redirect ke halaman lain
       return { redirect: '/toko-rejected-page' }; // Ganti '/toko-rejected-page' dengan path yang sesuai
     }
   
@@ -103,7 +102,6 @@ export class AuthService {
     const payload = { email: user.email, sub: user.id_user };
     const accessToken = this.jwtService.sign(payload);
   
-    // Tambahkan log atau tindakan lain setelah login berhasil
     if (accessToken) {
       console.log(`Toko ${toko.nama_toko} berhasil login dengan status ${toko.status}`);
     }
