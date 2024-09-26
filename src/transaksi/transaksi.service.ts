@@ -2,10 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Transaksi } from './entities/transaksi.entity';
-import { Pesanan } from 'src/pesanan/entities/pesanan.entity';
-import { MetodeTransaksi } from 'src/metode_transaksi/entities/metode_transaksi.entity';
-import { User } from 'src/users/entities/user.entity';
-import { DetilProdukPesanan } from 'src/detil_produk_pesanan/entities/detil_produk_pesanan.entity';
+import { GetTransaksiFilterDto } from './dto/omset.dto';
 
 @Injectable()
 export class TransaksiService {
@@ -22,7 +19,8 @@ export class TransaksiService {
   }
 
   async getAllTransaksi(startDate?: string, endDate?: string): Promise<any[]> {
-    const query = this.transaksiRepository.createQueryBuilder('transaksi')
+    const query = this.transaksiRepository
+      .createQueryBuilder('transaksi')
       .leftJoinAndSelect('transaksi.pesanan', 'pesanan')
       .leftJoinAndSelect('pesanan.detilProdukPesanan', 'detilProdukPesanan')
       .leftJoinAndSelect('transaksi.metodeTransaksi', 'metodeTransaksi')
@@ -49,17 +47,19 @@ export class TransaksiService {
 
     const transaksiList = await query.getMany();
 
-    return transaksiList.map(transaksi => {
+    return transaksiList.map((transaksi) => {
       // Pastikan relasi tidak null sebelum mengakses propertinya
-      const produkDetail = transaksi.pesanan?.detilProdukPesanan?.map(detil => ({
-        kode_produk: detil.produk?.kode_produk ?? 'N/A',
-        nama_produk: detil.produk?.nama_produk ?? 'N/A', // Sesuaikan jika nama berbeda
-        jumlah: detil.jumlah_produk,
-        harga: detil.produk?.harga_produk ?? 0,
-        total: detil.total_harga_produk,
-      })) ?? [];
+      const produkDetail =
+        transaksi.pesanan?.detilProdukPesanan?.map((detil) => ({
+          kode_produk: detil.produk?.kode_produk ?? 'N/A',
+          nama_produk: detil.produk?.nama_produk ?? 'N/A', // Sesuaikan jika nama berbeda
+          jumlah: detil.jumlah_produk,
+          harga: detil.produk?.harga_produk ?? 0,
+          total: detil.total_harga_produk,
+        })) ?? [];
 
-      const metodeTransaksi = transaksi.metodeTransaksi?.map(metode => metode.nama) ?? [];
+      const metodeTransaksi =
+        transaksi.metodeTransaksi?.map((metode) => metode.nama) ?? [];
 
       return {
         id_transaksi: transaksi.id_transaksi, // Menyertakan id_transaksi
@@ -85,74 +85,43 @@ export class TransaksiService {
   async getAllTransaksiCount(): Promise<number> {
     // Menghitung jumlah produk yang ada di database
     const count = await this.transaksiRepository.count();
-    return count;}
-
-  async getAllTransaksiLong(): Promise<{
-    jumlah_produk: number;
-    totalHarga: number;
-    createdAt: Date;
-    metodeTransaksi: string[];
-  }[]> {
-    const transaksiList = await this.transaksiRepository
-      .createQueryBuilder('transaksi')
-      .leftJoinAndSelect('transaksi.pesanan', 'pesanan')
-      .leftJoinAndSelect('pesanan.detilProdukPesanan', 'detilProdukPesanan')
-      .leftJoinAndSelect('transaksi.metodeTransaksi', 'metodeTransaksi')
-      .orderBy('transaksi.createdAt', 'DESC')
-      .take(50)
-      .getMany();
-
-    return transaksiList.map((transaksi) => {
-      const jumlahProduk = transaksi.pesanan.detilProdukPesanan.reduce(
-        (acc, detil) => acc + detil.jumlah_produk,
-        0,
-      );
-
-      const metodeTransaksi = transaksi.metodeTransaksi.map(
-        (metode) => metode.nama, // Pastikan ada field nama_metode di entitas MetodeTransaksi
-      );
-
-      return {
-        jumlah_produk: jumlahProduk,
-        totalHarga: transaksi.totalHarga,
-        createdAt: transaksi.createdAt,
-        metodeTransaksi,
-      };
-    });
+    return count;
   }
 
-  async getAllTransaksiVeryLong(): Promise<{
-    jumlah_produk: number;
-    totalHarga: number;
-    createdAt: Date;
-    metodeTransaksi: string[];
-  }[]> {
-    const transaksiList = await this.transaksiRepository
-      .createQueryBuilder('transaksi')
-      .leftJoinAndSelect('transaksi.pesanan', 'pesanan')
-      .leftJoinAndSelect('pesanan.detilProdukPesanan', 'detilProdukPesanan')
-      .leftJoinAndSelect('transaksi.metodeTransaksi', 'metodeTransaksi')
-      .orderBy('transaksi.createdAt', 'DESC')
-      .take(100)
-      .getMany();
+  async getTotalHarga(filterDto: GetTransaksiFilterDto): Promise<number> {
+    const { period } = filterDto;
 
-    return transaksiList.map((transaksi) => {
-      const jumlahProduk = transaksi.pesanan.detilProdukPesanan.reduce(
-        (acc, detil) => acc + detil.jumlah_produk,
-        0,
-      );
+    const query = this.transaksiRepository.createQueryBuilder('transaksi');
 
-      const metodeTransaksi = transaksi.metodeTransaksi.map(
-        (metode) => metode.nama, // Pastikan ada field nama_metode di entitas MetodeTransaksi
-      );
+    if (period) {
+      const startDate = this.getStartDate(period);
+      query.where('transaksi.created_at >= :startDate', { startDate });
+    }
 
-      return {
-        jumlah_produk: jumlahProduk,
-        totalHarga: transaksi.totalHarga,
-        createdAt: transaksi.createdAt,
-        metodeTransaksi,
-      };
-    });
+    const totalHarga = await query
+      .select('SUM(transaksi.total_harga)', 'total')
+      .getRawOne();
+
+    return totalHarga.total || 0;
+  }
+
+  private getStartDate(period: string): Date {
+    const date = new Date();
+    switch (period) {
+      case 'day':
+        date.setDate(date.getDate() - 1);
+        break;
+      case 'week':
+        date.setDate(date.getDate() - 7);
+        break;
+      case 'month':
+        date.setMonth(date.getMonth() - 1);
+        break;
+      case 'year':
+        date.setFullYear(date.getFullYear() - 1);
+        break;
+    }
+    return date;
   }
 
   // async bayar(pesananId: string, metodeTransaksiId: string): Promise<Transaksi> {

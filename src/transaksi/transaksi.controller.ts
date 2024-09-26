@@ -14,6 +14,7 @@ import { CreateTransaksiDto } from './dto/create-transaksi.dto';
 import { UpdateTransaksiDto } from './dto/update-transaksi.dto';
 import { Transaksi } from './entities/transaksi.entity';
 import { BayarDto } from './dto/bayar-dto';
+import { GetTransaksiFilterDto } from './dto/omset.dto';
 
 @Controller('transaksi')
 export class TransaksiController {
@@ -52,6 +53,13 @@ export class TransaksiController {
   async getAllTransaksiCount(): Promise<{ jumlahTransaksi: number }> {
     const jumlahTransaksi = await this.transaksiService.getAllTransaksiCount();
     return { jumlahTransaksi };
+  }
+
+  @Get('total-harga')
+  async getTotalHarga(
+    @Query() filterDto: GetTransaksiFilterDto,
+  ): Promise<number> {
+    return this.transaksiService.getTotalHarga(filterDto);
   }
 
   // @Get('all')
