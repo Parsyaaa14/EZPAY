@@ -22,7 +22,7 @@ import { UpdateProdukDto } from './dto/update-produk.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
 import { diskStorage } from 'multer';
-import { Produk } from './entities/produk.entity';
+import { Produk, StatusProduk } from './entities/produk.entity';
 import * as fs from 'fs';
 import * as path from 'path';
 import { join } from 'path/posix';
@@ -120,6 +120,13 @@ export class ProdukController {
   ): Promise<Produk[]> {
     return await this.produkService.getProdukByHarga(sort, kategori);
   }
+
+
+  @Get()
+  async findAllAktif(@Query('status') status: StatusProduk): Promise<Produk[]> {
+    return this.produkService.findAllAktif(status);
+  }
+
   @Get('search')
   async searchProduk(
     @Query('nama_produk') nama_produk: string,

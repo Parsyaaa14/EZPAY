@@ -58,7 +58,7 @@ export class Produk {
   @Column({ type: 'varchar', length: 60})
   satuan_produk: string;
 
-  @Column({type: 'enum', enum: StatusProduk, default: StatusProduk.Aktif})
+  @Column({ type: 'enum', enum: StatusProduk, default: StatusProduk.Aktif })
   status_produk: StatusProduk;
 
 
