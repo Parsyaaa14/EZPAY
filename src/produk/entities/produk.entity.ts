@@ -10,6 +10,7 @@ import {
   OneToMany,
   BeforeInsert,
   JoinColumn,
+  BeforeUpdate,
 } from 'typeorm';
 
 import { Kategori } from '../../kategori/entities/kategori.entity';
@@ -88,6 +89,15 @@ export class Produk {
   generateKodeProduk() {
     // Fungsi untuk membuat kode produk dengan kombinasi huruf dan angka
     this.kode_produk = this.generateRandomCode();
+  }
+
+  @BeforeUpdate() // Add the BeforeUpdate lifecycle hook
+  updateStatusBasedOnStock() {
+    if (this.stok === 0) {
+      this.status_produk = StatusProduk.TidakAktif;
+    } else {
+      this.status_produk = StatusProduk.Aktif;
+    }
   }
 
   // Fungsi untuk membuat kode 4 karakter acak campuran huruf dan angka

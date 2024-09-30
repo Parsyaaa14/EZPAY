@@ -72,6 +72,18 @@ export class ProdukService {
     return await queryBuilder.getMany();
   }
 
+  async getProdukByStok(sort: 'ASC' | 'DESC', kategori?: string): Promise<Produk[]> {
+    const queryBuilder = this.produkRepository.createQueryBuilder('produk')
+      .leftJoinAndSelect('produk.kategori', 'kategori') // Menggabungkan entitas kategori
+      .orderBy('produk.stok', sort);
+    
+    if (kategori) {
+      queryBuilder.andWhere('kategori.nama = :kategori', { kategori }); // Gunakan nama kolom yang benar dari entitas Kategori
+    }
+  
+    return await queryBuilder.getMany();
+  }
+
   async findAll() {
     return this.produkRepository.findAndCount({
       relations: ['kategori'], // tambahkan relasi kategori di sini

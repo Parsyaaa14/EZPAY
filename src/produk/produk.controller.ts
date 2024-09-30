@@ -119,6 +119,14 @@ export class ProdukController {
     return await this.produkService.getProdukByHarga(sort, kategori);
   }
 
+  @Get('by-stok')
+  async getProdukByStok(
+    @Query('sort') sort: 'ASC' | 'DESC',
+    @Query('kategori') kategori?: string,
+  ): Promise<Produk[]> {
+    return await this.produkService.getProdukByStok(sort, kategori);
+  }
+
 
   @Get()
   async findAllAktif(@Query('status') status: StatusProduk): Promise<Produk[]> {
