@@ -67,11 +67,13 @@ export class ProdukController {
       if (file) {
         createProdukDto.gambar_produk = file.filename;
       }
+      console.log("Menerima CreateProdukDto di controller:", createProdukDto); // Debugging
       return await this.produkService.createProduk(createProdukDto);
     } catch (error) {
-      throw new Error(`Error membuat produk : ${error.message}`);
+      throw new Error(`Error membuat produk: ${error.message}`);
     }
   }
+  
 
   // @Public()
   @Get('/image/:image')

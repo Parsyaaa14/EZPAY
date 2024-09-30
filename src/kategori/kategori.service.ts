@@ -121,6 +121,12 @@ export class KategoriService {
       }
     }
 
+    async findByName(nama: string): Promise<Kategori | null> {
+      return this.kategoriRepository.findOne({ where: { nama: nama } });
+    }
+    
+    
+
   async remove(id: string) {
     try {
       await this.kategoriRepository.findOneOrFail({
