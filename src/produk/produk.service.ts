@@ -20,22 +20,27 @@ export class ProdukService {
     private readonly kategoriRepository: Repository<Kategori>,
   ) {}
 
-  async createProduk(createProdukDto: CreateProdukDto):Promise<Produk> {
-    //periksa apakah id kategori ada
+  async createProduk(createProdukDto: CreateProdukDto): Promise<Produk> {
+    console.log("Menerima CreateProdukDto:", createProdukDto); // Debugging
+    // Periksa apakah id kategori ada
     const kategori = await this.kategoriRepository.findOne({
       where: {
-        id_kategori: createProdukDto.id_kategori
-      }
-    })
+        id_kategori: createProdukDto.id_kategori,
+      },
+    });
+    
     if (!kategori) {
       throw new NotFoundException(`Kategori dengan id ${createProdukDto.id_kategori} tidak ditemukan`);
     }
+    
     const newProduk = this.produkRepository.create({
       ...createProdukDto,
-      kategori
+      kategori,
     });
+    
     return this.produkRepository.save(newProduk);
   }
+  
 
   async filterProdukMinStok(): Promise<Produk[]> {
     // Query untuk mendapatkan produk dengan stok lebih dari 0, diurutkan dari stok terkecil

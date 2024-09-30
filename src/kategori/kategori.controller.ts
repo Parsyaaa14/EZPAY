@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, HttpStatus, ParseUUIDPipe, Query, BadRequestException, HttpException, Res, Response } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, HttpStatus, ParseUUIDPipe, Query, BadRequestException, HttpException, Res, NotFoundException } from '@nestjs/common';
 import { KategoriService } from './kategori.service';
 import { CreateKategoriDto } from './dto/create-kategori.dto';
 import { UpdateKategoriDto } from './dto/update-kategori.dto';
 import { Produk } from 'src/produk/entities/produk.entity';
-
+import { Kategori } from './entities/kategori.entity';
 
 @Controller('kategori')
 export class KategoriController {
@@ -57,6 +57,18 @@ export class KategoriController {
       message: 'success',
     };
   }
+
+  @Get('/find-by-name')
+  async findByName(@Query('nama') nama: string): Promise<{ data: Kategori }> {
+    const kategori = await this.kategoriService.findByName(nama);
+    if (!kategori) {
+      throw new NotFoundException(`Kategori dengan nama ${nama} tidak ditemukan`);
+    }
+    return { data: kategori };
+  }
+  
+  
+
 
   // @Put(':id_kategori')
   // async updateNamaKategori(
