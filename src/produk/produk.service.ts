@@ -2,8 +2,8 @@ import { Injectable, HttpException,HttpStatus, NotFoundException, InternalServer
 import { CreateProdukDto } from './dto/create-produk.dto';
 import { UpdateProdukDto } from './dto/update-produk.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Produk } from './entities/produk.entity';
-import { Repository } from 'typeorm';
+import { Produk, StatusProduk } from './entities/produk.entity';
+import { Repository, MoreThan } from 'typeorm';
 import { EntityNotFoundError } from 'typeorm';
 import { Kategori } from 'src/kategori/entities/kategori.entity';
 
@@ -76,6 +76,15 @@ export class ProdukService {
     return this.produkRepository.findAndCount({
       relations: ['kategori'], // tambahkan relasi kategori di sini
     });
+  }
+
+  async findAllAktif(status?: StatusProduk): Promise<Produk[]> {
+    if (status) {
+      return this.produkRepository.find({
+        where: { status_produk: status },
+      });
+    }
+    return this.produkRepository.find();
   }
   
 

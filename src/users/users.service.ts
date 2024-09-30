@@ -27,10 +27,6 @@ export class UsersService {
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
     ) {}
-    private generateRandomPassword(length: number): string {
-      return crypto.randomBytes(length).toString('hex').slice(0, length);
-    } 
-
     private ubahSalt(): string {
       return bcrypt.genSaltSync();
     }
