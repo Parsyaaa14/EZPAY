@@ -91,15 +91,6 @@ export class Produk {
     this.kode_produk = this.generateRandomCode();
   }
 
-  @BeforeUpdate() // Add the BeforeUpdate lifecycle hook
-  updateStatusBasedOnStock() {
-    if (this.stok === 0) {
-      this.status_produk = StatusProduk.TidakAktif;
-    } else {
-      this.status_produk = StatusProduk.Aktif;
-    }
-  }
-
   // Fungsi untuk membuat kode 4 karakter acak campuran huruf dan angka
   private generateRandomCode(): string {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; // Huruf dan angka

@@ -88,6 +88,17 @@ export class TransaksiService {
     return count;
   }
 
+  async getMonthlySales(): Promise<{ month: string; total: number }[]> {
+    const query = this.transaksiRepository.createQueryBuilder('transaksi')
+      .select('DATE_FORMAT(transaksi.created_at, "%Y-%m") as month')
+      .addSelect('SUM(transaksi.total_harga)', 'total')
+      .groupBy('month')
+      .orderBy('month', 'ASC');
+  
+    return await query.getRawMany();
+  }
+  
+
   async getTotalHarga(filterDto: GetTransaksiFilterDto): Promise<number> {
     const { period } = filterDto;
 
