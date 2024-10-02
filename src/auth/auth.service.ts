@@ -66,6 +66,18 @@ export class AuthService {
   
     return { access_token };
   }
+
+  async validateUser(token: string): Promise<User> {
+    try {
+      const payload = this.jwtService.verify(token);
+      // Assuming the payload has an id_user property
+      return await this.usersRepository.findOne({
+        where: { id_user: payload.id_user },
+      });
+    } catch (error) {
+      throw new UnauthorizedException('Invalid token');
+    }
+  }
   
 
   async validateToko(email: string, password: string) {

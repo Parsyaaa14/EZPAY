@@ -12,13 +12,12 @@ export class PesananController {
   //   return this.pesananService.save(pesananData);
   // }
 
-  @Post('bayar')
-  async bayar(@Body() pesananData: {
-    detil_produk_pesanan: { id_produk: string; jumlah_produk: number }[];
-    metode_transaksi_id: string;
-    userId?: string;
-    id_transaksi?: string;
+  @Post()
+  async createPesanan(@Body() pesananData: { 
+    detil_produk_pesanan: { id_produk: string; jumlah_produk: number }[]; 
+    metode_transaksi_id: string; 
+    token: string; // Token yang diterima dari permintaan
   }): Promise<Transaksi> {
-    return this.pesananService.saveOrderAndTransaction(pesananData);
+    return this.pesananService.savePesananAndTransaction(pesananData);
   }
 }
