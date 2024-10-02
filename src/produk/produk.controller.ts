@@ -14,6 +14,7 @@ import {
   Query,
   BadRequestException,
   NotFoundException,
+  InternalServerErrorException,
   Res,
 } from '@nestjs/common';
 import { ProdukService } from './produk.service';
@@ -28,11 +29,11 @@ import * as path from 'path';
 import { join } from 'path/posix';
 import { of } from 'rxjs';
 
+
 @Controller('produk')
 export class ProdukController {
   produkRepository: any;
   constructor(private readonly produkService: ProdukService) {}
-
 
   @Post()
   @UseInterceptors(
@@ -60,21 +61,20 @@ export class ProdukController {
     }),
   )
   async createProduk(
-    @Body() createProdukDto: CreateProdukDto,
-    @UploadedFile() file: Express.Multer.File,
+      @Body() createProdukDto: CreateProdukDto,
+      @UploadedFile() file: Express.Multer.File,
   ) {
-    try {
-      if (file) {
-        createProdukDto.gambar_produk = file.filename;
+      try {
+          if (file) {
+              createProdukDto.gambar_produk = file.filename;  // Simpan nama file di DTO
+          }
+          return await this.produkService.createProduk(createProdukDto);
+      } catch (error) {
+          throw new InternalServerErrorException(`Error membuat produk: ${error.message}`);
       }
-      console.log("Menerima CreateProdukDto di controller:", createProdukDto); // Debugging
-      return await this.produkService.createProduk(createProdukDto);
-    } catch (error) {
-      throw new Error(`Error membuat produk: ${error.message}`);
-    }
   }
   
-
+  
   // @Public()
   @Get('/image/:image')
   getImage(@Param('image') image: string, @Res() res: any){

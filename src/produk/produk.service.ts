@@ -23,37 +23,31 @@ export class ProdukService {
   async createProduk(createProdukDto: CreateProdukDto): Promise<Produk> {
     let kategori: Kategori;
   
-    // First, attempt to find the category by ID (UUID)
+    // Cari kategori berdasarkan id_kategori
     kategori = await this.kategoriRepository.findOne({
       where: {
         id_kategori: createProdukDto.id_kategori,
       },
     });
   
-    // If not found by ID, try to find it by name
     if (!kategori) {
-      kategori = await this.kategoriRepository.findOne({
-        where: {
-          nama: createProdukDto.id_kategori, // Assuming id_kategori might contain the name
-        },
-      });
-  
-      if (!kategori) {
-        throw new NotFoundException(`Kategori dengan id/nama ${createProdukDto.id_kategori} tidak ditemukan`);
-      }
+      throw new NotFoundException(`Kategori dengan id ${createProdukDto.id_kategori} tidak ditemukan`);
     }
   
-    // Now create and save the product with the correct category
+    // Buat produk baru dengan kategori yang sesuai
     const newProduk = this.produkRepository.create({
       ...createProdukDto,
       kategori,
     });
-    
-    return this.produkRepository.save(newProduk);
-  }  
   
+    // Simpan produk dan tangani error jika ada
+    try {
+      return await this.produkRepository.save(newProduk);
+    } catch (error) {
+      throw new InternalServerErrorException(`Error saving product: ${error.message}`);
+    }
+  }
   
-
   async filterProdukMinStok(): Promise<Produk[]> {
     // Query untuk mendapatkan produk dengan stok lebih dari 0, diurutkan dari stok terkecil
     const produk = await this.produkRepository

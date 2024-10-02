@@ -1,16 +1,12 @@
 import { Type } from 'class-transformer';
 import {
-  IsNotEmpty,
-  IsString,
-  IsNumber,
-  IsBoolean,
   IsOptional,
 } from 'class-validator';
 import { StatusProduk } from '../entities/produk.entity';
 
 export class CreateProdukDto {
   @IsOptional()
-  id_kategori: string;
+  id_kategori: string;  // Pastikan ini bertipe string
   @IsOptional()
   nama_produk: string;
   @IsOptional()
@@ -23,10 +19,9 @@ export class CreateProdukDto {
   kode_produk: string;
   @IsOptional()
   satuan_produk: string;
-
   @IsOptional()
   status_produk: StatusProduk;
-
   @IsOptional()
   gambar_produk: string;
 }
+
