@@ -61,6 +61,11 @@ export class UsersController {
     return this.usersService.tambahSuperadmin(CreateSuperadminDto);
   }
 
+  @Get('kasir')
+  async getKasirUsers(): Promise<User[]> {
+    return await this.usersService.getKasirUsers();
+  }
+
   @Get()
   async findAll() {
     const [data, count] = await this.usersService.findAll();

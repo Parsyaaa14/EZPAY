@@ -66,6 +66,9 @@ export class User {
   @Column ({ type: 'enum', enum: StatusUser, default: StatusUser.Aktif })
   status: StatusUser;
 
+  @Column({ type: 'timestamp', nullable: true })
+  lastLogin: Date;  // Kolom untuk menyimpan waktu login terakhir
+
   @CreateDateColumn({
     type: 'timestamp with time zone',
     nullable: false,

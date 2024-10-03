@@ -153,6 +153,14 @@ export class UsersService {
     return await this.usersRepository.save(user);
   }
 
+  async getKasirUsers(): Promise<User[]> {
+    return await this.usersRepository.find({
+      where: { role: { nama: 'Kasir' } },
+      select: ['id_user', 'nama', 'email', 'status', 'lastLogin'],
+      relations: ['role'],
+    });
+  }
+
 
   async editPassword(id: string, editPasswordDto: EditPasswordDto): Promise<User> {
     const { email, password } = editPasswordDto;
