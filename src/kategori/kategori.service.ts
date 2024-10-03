@@ -32,23 +32,18 @@ export class KategoriService {
     });
   }
 
-  async filterProdukByKategori(namaKategori: string): Promise<Produk[]> {
+  async filterProdukByKategori(idKategori: string): Promise<Produk[]> {
     try {
-      // Cari kategori berdasarkan nama
-      const kategori = await this.kategoriRepository.findOne({
-        where: { nama: namaKategori },
-        relations: ['produk'], // pastikan relasi 'produk' diambil
-      });
-
-      if (!kategori) {
-        throw new Error('Kategori tidak ditemukan');
-      }
-
       // Ambil produk berdasarkan id_kategori
       const produk = await this.produkRepository.find({
-        where: { kategori: { id_kategori: kategori.id_kategori } },
+        where: { kategori: { id_kategori: idKategori } },
       });
-
+  
+      // Jika tidak ada produk, kembalikan array kosong
+      if (produk.length === 0) {
+        return [];  // Mengembalikan array kosong jika produk tidak ditemukan
+      }
+  
       return produk;
     } catch (error) {
       throw new Error(
@@ -56,6 +51,8 @@ export class KategoriService {
       );
     }
   }
+  
+  
 
   findAll() {
     return this.kategoriRepository.findAndCount();
