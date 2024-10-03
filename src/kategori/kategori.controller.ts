@@ -19,10 +19,18 @@ export class KategoriController {
   }
 
 
-  @Get('/produk/:namaKategori')
-  async getProdukByKategori(@Param('namaKategori') namaKategori: string): Promise<Produk[]> {
-    return this.kategoriService.filterProdukByKategori(namaKategori);
+  @Get('/produk/:idKategori')
+  async getProdukByKategori(@Param('idKategori') idKategori: string): Promise<Produk[]> {
+    const produk = await this.kategoriService.filterProdukByKategori(idKategori);
+  
+    if (!produk || produk.length === 0) {
+      return []; // Pastikan mengembalikan array kosong
+    }
+  
+    return produk;
   }
+  
+  
 
   // @Get('filter-produk/:namaKategori')
   // async filterProdukByKategori(@Param('namaKategori') namaKategori: string): Promise<Produk[]> {
