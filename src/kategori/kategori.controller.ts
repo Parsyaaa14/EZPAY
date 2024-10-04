@@ -30,6 +30,22 @@ export class KategoriController {
     return produk;
   }
   
+  @Get('/produk-count')
+  async getProdukCountPerKategori() {
+    try {
+      const result = await this.kategoriService.countProdukInKategori();
+      return {
+        data: result,
+        statusCode: HttpStatus.OK,
+        message: 'success',
+      };
+    } catch (error) {
+      throw new HttpException(
+        `Gagal mendapatkan jumlah produk per kategori: ${error.message}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
   
 
   // @Get('filter-produk/:namaKategori')

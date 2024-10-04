@@ -2,7 +2,6 @@ import {
   Injectable,
   HttpException,
   HttpStatus,
-  InternalServerErrorException,
 } from '@nestjs/common';
 import { CreateKategoriDto } from './dto/create-kategori.dto';
 import { UpdateKategoriDto } from './dto/update-kategori.dto';
@@ -52,7 +51,27 @@ export class KategoriService {
     }
   }
   
+    // Method untuk menghitung jumlah produk di dalam kategori
+    async countProdukInKategori(): Promise<any[]> {
+      try {
+        const kategoriList = await this.kategoriRepository.find(); // Ambil semua kategori
+        const produkCountPerKategori = [];
   
+        for (const kategori of kategoriList) {
+          const produkCount = await this.produkRepository.count({
+            where: { kategori: { id_kategori: kategori.id_kategori } }, // Hitung produk berdasarkan kategori
+          });
+          produkCountPerKategori.push({
+            kategori: kategori.nama,
+            jumlahProduk: produkCount,
+          });
+        }
+  
+        return produkCountPerKategori;
+      } catch (error) {
+        throw new Error(`Gagal menghitung produk per kategori: ${error.message}`);
+      }
+    }
 
   findAll() {
     return this.kategoriRepository.findAndCount();
