@@ -69,9 +69,13 @@ export class AuthService {
     await this.usersRepository.save(user);
 
     // Buat payload JWT
-    const payload = { email: user.email, sub: user.id_user };
+    const payload = {
+      email: user.email,
+      sub: user.id_user,
+      iat: Math.floor(Date.now() / 1000), // Add issued at (current time in seconds)
+    };
+    
     const access_token = this.jwtService.sign(payload);
-
     // Kembalikan token dan redirectUrl jika password diubah
     return {
       access_token,

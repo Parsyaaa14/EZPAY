@@ -18,6 +18,20 @@ export class TransaksiService {
     });
   }
 
+  async findByUserId(id_user: string): Promise<Transaksi[]> {
+    return this.transaksiRepository.find({
+      where: {
+        user: {
+          id_user,
+          role: {
+            nama: 'Kasir', // Check that the user has the role "Kasir"
+          },
+        },
+      },
+      relations: ['user', 'user.role', 'pesanan', 'metodeTransaksi'], // Ensure user role is loaded
+    });
+  }
+
   async getAllTransaksi(startDate?: string, endDate?: string): Promise<any[]> {
     const query = this.transaksiRepository
       .createQueryBuilder('transaksi')
