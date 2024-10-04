@@ -25,6 +25,11 @@ export class TransaksiController {
     return this.transaksiService.getTransaksi(id);
   }
 
+  @Get('user/:id_user')
+  async getTransaksiByUserId(@Param('id_user') id_user: string) {
+    return this.transaksiService.findByUserId(id_user);
+  }
+
   @Get('/all')
   async getAllTransaksi(
     @Query('startDate') startDate: string = '2000-01-01', // Default ke awal tahun 2000

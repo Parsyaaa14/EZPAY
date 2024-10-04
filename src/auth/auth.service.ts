@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -18,33 +22,34 @@ export class AuthService {
     private readonly jwtService: JwtService, // Inject JwtService
   ) {
     this.jwtSecret = process.env.JWT_SECRET || 'your_default_jwt_secret';
-    console.log('JWT_SECRET:', this.jwtSecret);  // Log untuk memastikan JWT_SECRET terbaca
+    console.log('JWT_SECRET:', this.jwtSecret); // Log untuk memastikan JWT_SECRET terbaca
   }
 
   async loginForKasir(
-    email: string, 
-    password: string
-  ): Promise<{ access_token?: string, redirectUrl?: string, alert?: string }> {
-    
+    email: string,
+    password: string,
+  ): Promise<{ access_token?: string; redirectUrl?: string; alert?: string }> {
     const user = await this.usersRepository.findOne({
       where: { email },
       relations: ['role'], // Ensure role is loaded
     });
-  
+
     if (!user) {
       throw new UnauthorizedException('Email tidak ditemukan');
     }
-  
+
     // Cek apakah role adalah 'kasir'
     if (user.role.nama !== 'Kasir') {
       throw new UnauthorizedException('Akses ditolak: Anda bukan kasir');
     }
-  
+
     // Cek apakah status kasir adalah INACTIVE
     if (user.status === 'tidak aktif') {
-      throw new UnauthorizedException('Akses ditolak: Akun Anda sedang tidak aktif');
+      throw new UnauthorizedException(
+        'Akses ditolak: Akun Anda sedang tidak aktif',
+      );
     }
-  
+
     // Jika password yang diinput adalah default '123456', arahkan user ke endpoint edit-password
     if (password === '123456' && !user.password.includes('$2b$')) {
       return {
@@ -52,19 +57,33 @@ export class AuthService {
         redirectUrl: `/edit_password_kasir?id=${user.id_user}`, // Menggunakan path yang benar
       };
     }
-  
+
     // Jika password sudah diubah, hash password-nya
     const isMatch = await bcrypt.compare(password, user.password);
-  
+
     if (!isMatch) {
       throw new UnauthorizedException('Password salah');
     }
-  
+
+    user.lastLogin = new Date();
+    await this.usersRepository.save(user);
+
     // Buat payload JWT
-    const payload = { email: user.email, sub: user.id_user };
+    const payload = {
+      email: user.email,
+      sub: user.id_user,
+      iat: Math.floor(Date.now() / 1000), // Add issued at (current time in seconds)
+    };
+    
     const access_token = this.jwtService.sign(payload);
-  
-    return { access_token };
+    // Kembalikan token dan redirectUrl jika password diubah
+    return {
+      access_token,
+      redirectUrl:
+        user.password === '123456'
+          ? `/edit_password_kasir?id=${user.id_user}`
+          : undefined,
+    };
   }
 
   async validateUser(token: string): Promise<User> {
@@ -78,51 +97,58 @@ export class AuthService {
       throw new UnauthorizedException('Invalid token');
     }
   }
-  
 
   async validateToko(email: string, password: string) {
     // Cari user berdasarkan email
     const user = await this.usersRepository.findOne({ where: { email } });
-  
+
     if (!user) {
       throw new UnauthorizedException('Akun tidak ditemukan');
     }
-  
+
     // Validasi password user
     const passwordIsValid = await bcrypt.compare(password, user.password);
     if (!passwordIsValid) {
       throw new UnauthorizedException('Password salah');
     }
-  
+
     // Cari toko yang terkait dengan user tersebut, gunakan user.id_user
-    const toko = await this.tokoRepository.findOne({ where: { user: { id_user: user.id_user } } });
-  
+    const toko = await this.tokoRepository.findOne({
+      where: { user: { id_user: user.id_user } },
+    });
+
     if (!toko) {
       throw new UnauthorizedException('Toko tidak ditemukan untuk user ini');
     }
-  
+
     // Cek status toko
     if (toko.status === StatusToko.PENDING) {
-      throw new ForbiddenException('Akun Anda masih dalam proses persetujuan. Harap tunggu.');
+      throw new ForbiddenException(
+        'Akun Anda masih dalam proses persetujuan. Harap tunggu.',
+      );
     }
-  
+
     if (toko.status === StatusToko.REJECTED) {
       return { redirect: '/toko-rejected-page' }; // Ganti '/toko-rejected-page' dengan path yang sesuai
     }
-  
+
     // Generate JWT token
     const payload = { email: user.email, sub: user.id_user };
     const accessToken = this.jwtService.sign(payload);
-  
+
     if (accessToken) {
-      console.log(`Toko ${toko.nama_toko} berhasil login dengan status ${toko.status}`);
+      console.log(
+        `Toko ${toko.nama_toko} berhasil login dengan status ${toko.status}`,
+      );
     }
-  
+
     return { message: 'Login berhasil', accessToken };
   }
-  
 
-  async loginForSuperadmin(email: string, password: string): Promise<{ access_token: string }> {
+  async loginForSuperadmin(
+    email: string,
+    password: string,
+  ): Promise<{ access_token: string }> {
     const user = await this.usersRepository.findOne({
       where: { email },
       relations: ['role'], // Ensure role is loaded
@@ -159,17 +185,6 @@ export class AuthService {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
 // import { Injectable, UnauthorizedException } from '@nestjs/common';
 // import { InjectRepository } from '@nestjs/typeorm';
 // import { Repository } from 'typeorm';
@@ -187,7 +202,6 @@ export class AuthService {
 //   ) {
 //     this.jwtSecret = process.env.JWT_SECRET || 'your_default_jwt_secret';
 //   }
-  
 
 //   async login(email: string, password: string): Promise<{ access_token: string }> {
 //     const user = await this.usersRepository.findOne({ where: { email } });

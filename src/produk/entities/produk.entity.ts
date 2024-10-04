@@ -28,7 +28,8 @@ export class Produk {
   @PrimaryGeneratedColumn('uuid')
   id_produk: string;
 
-  @ManyToOne(() => Kategori, (kategori) => kategori.produk)
+  @ManyToOne(() => Kategori, (kategori) => kategori.produk, { eager: true }) // Pastikan eager diatur ke true
+  @JoinColumn({ name: 'id_kategori' }) // Sesuaikan nama kolom di sini jika diperlukan
   kategori: Kategori;
   
 
