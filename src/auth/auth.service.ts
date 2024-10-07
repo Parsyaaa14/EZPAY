@@ -74,7 +74,7 @@ export class AuthService {
       sub: user.id_user,
       iat: Math.floor(Date.now() / 1000), // Add issued at (current time in seconds)
     };
-    
+
     const access_token = this.jwtService.sign(payload);
     // Kembalikan token dan redirectUrl jika password diubah
     return {
@@ -133,16 +133,19 @@ export class AuthService {
     }
 
     // Generate JWT token
-    const payload = { email: user.email, sub: user.id_user };
-    const accessToken = this.jwtService.sign(payload);
+    const payload = {
+      email: user.email,
+      sub: user.id_user,
+      iat: Math.floor(Date.now() / 1000),
+    }; // Add issued at (current time in seconds) };
+    const access_token = this.jwtService.sign(payload);
 
-    if (accessToken) {
+    if (access_token) {
       console.log(
         `Toko ${toko.nama_toko} berhasil login dengan status ${toko.status}`,
       );
     }
-
-    return { message: 'Login berhasil', accessToken };
+    return { message: 'Login berhasil', access_token };
   }
 
   async loginForSuperadmin(
