@@ -104,7 +104,7 @@ export class TransaksiService {
 
   async getMonthlySales(): Promise<{ month: string; total: number }[]> {
     const query = this.transaksiRepository.createQueryBuilder('transaksi')
-      .select('DATE_FORMAT(transaksi.created_at, "%Y-%m") as month')
+      .select(`TO_CHAR(transaksi.created_at, 'YYYY-MM')`, 'month')
       .addSelect('SUM(transaksi.total_harga)', 'total')
       .groupBy('month')
       .orderBy('month', 'ASC');
