@@ -1,8 +1,9 @@
 // auth.controller.ts
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body,Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ValidateTokoDto } from './dto/validate-toko.dto';
 import { TokoService } from 'src/toko/toko.service';
+import { Response } from 'express';
 
 @Controller('auth') // Perhatikan bahwa ini mendefinisikan prefix 'auth'
 export class AuthController {
@@ -18,13 +19,22 @@ export class AuthController {
   }
 
   @Post('login/')
-  async validateToko(@Body() validateTokoDto: ValidateTokoDto) {
+  async validateToko(@Body() validateTokoDto: ValidateTokoDto, @Res({ passthrough: true }) res: Response) {
     const { email, password } = validateTokoDto;
     const result = await this.authService.validateToko(email, password);
   
     if (result.redirect) {
       return { redirectUrl: result.redirect }; // Jika toko ditolak, berikan URL redirect ke frontend
     }
+  
+    // Simpan token di cookie setelah login berhasil
+    res.cookie('accessToken', result.access_token, {
+      httpOnly: true, // Cookie hanya bisa diakses oleh server
+      secure: true,   // Aktifkan hanya di production
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 3600 * 1000, // 1 jam
+    });
   
     return result; // Jika login berhasil atau status pending
   }
