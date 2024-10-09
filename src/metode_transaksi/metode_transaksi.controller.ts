@@ -13,7 +13,7 @@ export class MetodeTransaksiController {
   }
 
   @Get()
-  findAll() {
+  async getAll() {
     return this.metodeTransaksiService.findAll();
   }
 

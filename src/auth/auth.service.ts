@@ -31,60 +31,112 @@ export class AuthService {
   ): Promise<{ access_token?: string; redirectUrl?: string; alert?: string }> {
     const user = await this.usersRepository.findOne({
       where: { email },
-      relations: ['role'], // Ensure role is loaded
+      relations: ['role'],
     });
-
+  
     if (!user) {
       throw new UnauthorizedException('Email tidak ditemukan');
     }
-
-    // Cek apakah role adalah 'kasir'
+  
     if (user.role.nama !== 'Kasir') {
       throw new UnauthorizedException('Akses ditolak: Anda bukan kasir');
     }
-
-    // Cek apakah status kasir adalah INACTIVE
+  
     if (user.status === 'tidak aktif') {
-      throw new UnauthorizedException(
-        'Akses ditolak: Akun Anda sedang tidak aktif',
-      );
+      throw new UnauthorizedException('Akses ditolak: Akun Anda sedang tidak aktif');
     }
-
-    // Jika password yang diinput adalah default '123456', arahkan user ke endpoint edit-password
+  
     if (password === '123456' && !user.password.includes('$2b$')) {
       return {
         alert: 'Anda perlu mengubah password Anda',
-        redirectUrl: `/edit_password_kasir?id=${user.id_user}`, // Menggunakan path yang benar
+        redirectUrl: `/edit_password_kasir?id=${user.id_user}`,
       };
     }
-
-    // Jika password sudah diubah, hash password-nya
+  
     const isMatch = await bcrypt.compare(password, user.password);
-
     if (!isMatch) {
       throw new UnauthorizedException('Password salah');
     }
-
+  
     user.lastLogin = new Date();
     await this.usersRepository.save(user);
-
-    // Buat payload JWT
+  
+    // Buat payload JWT tanpa exp
     const payload = {
       email: user.email,
       sub: user.id_user,
       iat: Math.floor(Date.now() / 1000), // Add issued at (current time in seconds)
     };
-
-    const access_token = this.jwtService.sign(payload);
-    // Kembalikan token dan redirectUrl jika password diubah
+  
+    // Generate token dengan expiresIn
+    const access_token = this.jwtService.sign(payload, { expiresIn: '1h' }); // Set expiration time
+  
     return {
       access_token,
-      redirectUrl:
-        user.password === '123456'
-          ? `/edit_password_kasir?id=${user.id_user}`
-          : undefined,
+      redirectUrl: user.password === '123456' ? `/edit_password_kasir?id=${user.id_user}` : undefined,
     };
   }
+
+  // async loginForKasir(
+  //   email: string,
+  //   password: string,
+  // ): Promise<{ access_token?: string; redirectUrl?: string; alert?: string }> {
+  //   const user = await this.usersRepository.findOne({
+  //     where: { email },
+  //     relations: ['role'], // Ensure role is loaded
+  //   });
+
+  //   if (!user) {
+  //     throw new UnauthorizedException('Email tidak ditemukan');
+  //   }
+
+  //   // Cek apakah role adalah 'kasir'
+  //   if (user.role.nama !== 'Kasir') {
+  //     throw new UnauthorizedException('Akses ditolak: Anda bukan kasir');
+  //   }
+
+  //   // Cek apakah status kasir adalah INACTIVE
+  //   if (user.status === 'tidak aktif') {
+  //     throw new UnauthorizedException(
+  //       'Akses ditolak: Akun Anda sedang tidak aktif',
+  //     );
+  //   }
+
+  //   // Jika password yang diinput adalah default '123456', arahkan user ke endpoint edit-password
+  //   if (password === '123456' && !user.password.includes('$2b$')) {
+  //     return {
+  //       alert: 'Anda perlu mengubah password Anda',
+  //       redirectUrl: `/edit_password_kasir?id=${user.id_user}`, // Menggunakan path yang benar
+  //     };
+  //   }
+
+  //   // Jika password sudah diubah, hash password-nya
+  //   const isMatch = await bcrypt.compare(password, user.password);
+
+  //   if (!isMatch) {
+  //     throw new UnauthorizedException('Password salah');
+  //   }
+
+  //   user.lastLogin = new Date();
+  //   await this.usersRepository.save(user);
+
+  //   // Buat payload JWT
+  //   const payload = {
+  //     email: user.email,
+  //     sub: user.id_user,
+  //     iat: Math.floor(Date.now() / 1000), // Add issued at (current time in seconds)
+  //   };
+
+  //   const access_token = this.jwtService.sign(payload);
+  //   // Kembalikan token dan redirectUrl jika password diubah
+  //   return {
+  //     access_token,
+  //     redirectUrl:
+  //       user.password === '123456'
+  //         ? `/edit_password_kasir?id=${user.id_user}`
+  //         : undefined,
+  //   };
+  // }
 
   async validateUser(token: string): Promise<User> {
     try {
