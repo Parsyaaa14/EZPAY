@@ -67,6 +67,11 @@ export class TransaksiController {
     return this.transaksiService.getTotalHarga(filterDto);
   }
 
+  @Get('monthly-sales') // Menentukan method GET
+  async getMonthlySales() {
+    return this.transaksiService.getMonthlySales();
+  }
+
   // @Get('all')
   // async getAllTransaksiLong() {
   //   return this.transaksiService.getAllTransaksiLong();
