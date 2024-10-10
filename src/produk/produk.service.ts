@@ -1,4 +1,10 @@
-import { Injectable, HttpException,HttpStatus, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  HttpException,
+  HttpStatus,
+  NotFoundException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { CreateProdukDto } from './dto/create-produk.dto';
 import { UpdateProdukDto } from './dto/update-produk.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,12 +13,8 @@ import { Repository, MoreThan } from 'typeorm';
 import { EntityNotFoundError } from 'typeorm';
 import { Kategori } from 'src/kategori/entities/kategori.entity';
 
-
-
-
 @Injectable()
 export class ProdukService {
-
   constructor(
     @InjectRepository(Produk)
     private produkRepository: Repository<Produk>,
@@ -22,32 +24,36 @@ export class ProdukService {
 
   async createProduk(createProdukDto: CreateProdukDto): Promise<Produk> {
     let kategori: Kategori;
-  
+
     // Cari kategori berdasarkan id_kategori
     kategori = await this.kategoriRepository.findOne({
       where: {
         id_kategori: createProdukDto.id_kategori,
       },
     });
-  
+
     if (!kategori) {
-      throw new NotFoundException(`Kategori dengan id ${createProdukDto.id_kategori} tidak ditemukan`);
+      throw new NotFoundException(
+        `Kategori dengan id ${createProdukDto.id_kategori} tidak ditemukan`,
+      );
     }
-  
+
     // Buat produk baru dengan kategori yang sesuai
     const newProduk = this.produkRepository.create({
       ...createProdukDto,
       kategori,
     });
-  
+
     // Simpan produk dan tangani error jika ada
     try {
       return await this.produkRepository.save(newProduk);
     } catch (error) {
-      throw new InternalServerErrorException(`Error saving product: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Error saving product: ${error.message}`,
+      );
     }
   }
-  
+
   async filterProdukMinStok(): Promise<Produk[]> {
     // Query untuk mendapatkan produk dengan stok lebih dari 0, diurutkan dari stok terkecil
     const produk = await this.produkRepository
@@ -63,35 +69,43 @@ export class ProdukService {
   // async getProdukByHarga(sort: 'ASC' | 'DESC', kategori?: string): Promise<Produk[]> {
   //   const queryBuilder = this.produkRepository.createQueryBuilder('produk')
   //     .orderBy('produk.harga_produk', sort);
-    
+
   //   if (kategori) {
   //     queryBuilder.andWhere('produk.id_kategori = :kategori', { kategori });
   //   }
 
   //   return await queryBuilder.getMany();
   // }
-  
-  async getProdukByHarga(sort: 'ASC' | 'DESC', kategori?: string): Promise<Produk[]> {
-    const queryBuilder = this.produkRepository.createQueryBuilder('produk')
+
+  async getProdukByHarga(
+    sort: 'ASC' | 'DESC',
+    kategori?: string,
+  ): Promise<Produk[]> {
+    const queryBuilder = this.produkRepository
+      .createQueryBuilder('produk')
       .leftJoinAndSelect('produk.kategori', 'kategori') // Menggabungkan entitas kategori
       .orderBy('produk.harga_produk', sort);
-    
+
     if (kategori) {
       queryBuilder.andWhere('kategori.nama = :kategori', { kategori }); // Gunakan nama kolom yang benar dari entitas Kategori
     }
-  
+
     return await queryBuilder.getMany();
   }
 
-  async getProdukByStok(sort: 'ASC' | 'DESC', kategori?: string): Promise<Produk[]> {
-    const queryBuilder = this.produkRepository.createQueryBuilder('produk')
+  async getProdukByStok(
+    sort: 'ASC' | 'DESC',
+    kategori?: string,
+  ): Promise<Produk[]> {
+    const queryBuilder = this.produkRepository
+      .createQueryBuilder('produk')
       .leftJoinAndSelect('produk.kategori', 'kategori') // Menggabungkan entitas kategori
       .orderBy('produk.stok', sort);
-    
+
     if (kategori) {
       queryBuilder.andWhere('kategori.nama = :kategori', { kategori }); // Gunakan nama kolom yang benar dari entitas Kategori
     }
-  
+
     return await queryBuilder.getMany();
   }
 
@@ -109,7 +123,6 @@ export class ProdukService {
     }
     return this.produkRepository.find();
   }
-  
 
   async searchProduk(nama_produk: string): Promise<Produk[]> {
     return await this.produkRepository
@@ -140,42 +153,51 @@ export class ProdukService {
     }
   }
 
-  async updateProduk(id_produk: string, updateProdukDto: UpdateProdukDto): Promise<Produk> {
+  async updateProduk(
+    id_produk: string,
+    updateProdukDto: UpdateProdukDto,
+  ): Promise<Produk> {
     const { nama: namaKategori, ...updateData } = updateProdukDto;
 
     // Cari produk berdasarkan ID
-    const produk = await this.produkRepository.findOne({ where: { id_produk } });
+    const produk = await this.produkRepository.findOne({
+      where: { id_produk },
+    });
 
     if (!produk) {
-        throw new NotFoundException(`Produk dengan ID ${id_produk} tidak ditemukan`);
+      throw new NotFoundException(
+        `Produk dengan ID ${id_produk} tidak ditemukan`,
+      );
     }
 
     // Jika nama kategori di-update, pastikan kategori tersebut ada
     if (namaKategori) {
-        const kategori = await this.kategoriRepository.findOne({
-            where: { nama: namaKategori },
-        });
+      const kategori = await this.kategoriRepository.findOne({
+        where: { nama: namaKategori },
+      });
 
-        if (!kategori) {
-            throw new NotFoundException(`Kategori dengan nama ${namaKategori} tidak ditemukan`);
-        }
+      if (!kategori) {
+        throw new NotFoundException(
+          `Kategori dengan nama ${namaKategori} tidak ditemukan`,
+        );
+      }
 
-        produk.kategori = kategori;
+      produk.kategori = kategori;
     }
 
     // Update produk dengan data baru
     Object.assign(produk, updateData);
 
     return this.produkRepository.save(produk);
-}
-
-
+  }
 
   private generateRandomCode(): string {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; // Huruf dan angka
     let result = '';
     for (let i = 0; i < 6; i++) {
-      result += characters.charAt(Math.floor(Math.random() * characters.length));
+      result += characters.charAt(
+        Math.floor(Math.random() * characters.length),
+      );
     }
     return result;
   }
@@ -184,6 +206,14 @@ export class ProdukService {
     // Menghitung jumlah produk yang ada di database
     const count = await this.produkRepository.count();
     return count;
+  }
+
+  async findProductsByToko(id_toko: string): Promise<Produk[]> {
+    return await this.produkRepository
+      .createQueryBuilder('produk')
+      .leftJoinAndSelect('produk.toko', 'toko')
+      .where('toko.id_toko = :id_toko', { id_toko })
+      .getMany();
   }
 
   async remove(id: string) {
