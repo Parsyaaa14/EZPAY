@@ -94,54 +94,50 @@ export class AuthService {
     const user = await this.usersRepository.findOne({ where: { email } });
 
     if (!user) {
-        throw new UnauthorizedException('Akun tidak ditemukan');
+      throw new UnauthorizedException('Akun tidak ditemukan');
     }
 
     // Validasi password user
     const passwordIsValid = await bcrypt.compare(password, user.password);
     if (!passwordIsValid) {
-        throw new UnauthorizedException('Password salah');
+      throw new UnauthorizedException('Password salah');
     }
 
     // Cari toko yang terkait dengan user tersebut, gunakan user.id_user
     const toko = await this.tokoRepository.findOne({
-        where: { user: { id_user: user.id_user } },
+      where: { user: { id_user: user.id_user } },
     });
 
     if (!toko) {
-        throw new UnauthorizedException('Toko tidak ditemukan untuk user ini');
+      throw new UnauthorizedException('Toko tidak ditemukan untuk user ini');
     }
 
     // Cek status toko
     if (toko.status === StatusToko.PENDING) {
-        throw new ForbiddenException(
-            'Akun Anda masih dalam proses persetujuan. Harap tunggu.',
-        );
+      throw new ForbiddenException(
+        'Akun Anda masih dalam proses persetujuan. Harap tunggu.',
+      );
     }
 
     if (toko.status === StatusToko.REJECTED) {
-        return { redirect: '/toko-rejected-page' }; // Ganti '/toko-rejected-page' dengan path yang sesuai
+      return { redirect: '/toko-rejected-page' }; // Ganti '/toko-rejected-page' dengan path yang sesuai
     }
 
     // Generate JWT token
     const payload = {
-        email: user.email,
-        sub: user.id_user,
-        iat: Math.floor(Date.now() / 1000), // Add issued at (current time in seconds)
-    };
+      email: user.email,
+      sub: user.id_user,
+      iat: Math.floor(Date.now() / 1000),
+    }; // Add issued at (current time in seconds) };
     const access_token = this.jwtService.sign(payload);
 
-    // Store current user and current store in sessionStorage
-    sessionStorage.setItem('currentUser', JSON.stringify(user));
-    sessionStorage.setItem('currentStore', JSON.stringify(toko));
-
     if (access_token) {
-        console.log(
-            `Toko ${toko.nama_toko} berhasil login dengan status ${toko.status}`,
-        );
+      console.log(
+        `Toko ${toko.nama_toko} berhasil login dengan status ${toko.status}`,
+      );
     }
     return { message: 'Login berhasil', access_token };
-}
+  }
 
   async loginForSuperadmin(
     email: string,
