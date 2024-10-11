@@ -29,7 +29,6 @@ import * as path from 'path';
 import { join } from 'path/posix';
 import { of } from 'rxjs';
 
-
 @Controller('produk')
 export class ProdukController {
   produkRepository: any;
@@ -61,23 +60,37 @@ export class ProdukController {
     }),
   )
   async createProduk(
-      @Body() createProdukDto: CreateProdukDto,
-      @UploadedFile() file: Express.Multer.File,
+    @Body() createProdukDto: CreateProdukDto,
+    @UploadedFile() file: Express.Multer.File,
   ) {
-      try {
-          if (file) {
-              createProdukDto.gambar_produk = file.filename;  // Simpan nama file di DTO
-          }
-          return await this.produkService.createProduk(createProdukDto);
-      } catch (error) {
-          throw new InternalServerErrorException(`Error membuat produk: ${error.message}`);
+    try {
+      if (file) {
+        createProdukDto.gambar_produk = file.filename; // Simpan nama file di DTO
       }
+      return await this.produkService.createProduk(createProdukDto);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Error membuat produk: ${error.message}`,
+      );
+    }
   }
-  
-  
+
   // @Public()
+  @Get('/toko/:id_toko')
+  async getProductsByToko(@Param('id_toko') id_toko: string) {
+    try {
+      const products = await this.produkService.findProductsByToko(id_toko);
+      return products;
+    } catch (error) {
+      console.error('Error fetching products for toko:', error);
+      throw new InternalServerErrorException(
+        'Failed to fetch products for toko',
+      );
+    }
+  }
+
   @Get('/image/:image')
-  getImage(@Param('image') image: string, @Res() res: any){
+  getImage(@Param('image') image: string, @Res() res: any) {
     return of(res.sendFile(join(process.cwd(), `uploads/products/${image}`)));
   }
 
@@ -128,7 +141,6 @@ export class ProdukController {
   ): Promise<Produk[]> {
     return await this.produkService.getProdukByStok(sort, kategori);
   }
-
 
   @Get()
   async findAllAktif(@Query('status') status: StatusProduk): Promise<Produk[]> {
@@ -222,10 +234,7 @@ export class ProdukController {
         updateProdukDto.gambar_produk = file.filename; // Simpan nama file baru
       }
 
-      return await this.produkService.updateProduk(
-        id_produk,
-        updateProdukDto,
-      );
+      return await this.produkService.updateProduk(id_produk, updateProdukDto);
     } catch (error) {
       throw new HttpException(
         `Gagal memperbarui produk: ${error.message}`,
