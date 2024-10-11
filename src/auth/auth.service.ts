@@ -34,18 +34,31 @@ export class AuthService {
       relations: ['role'],
     });
   
+    // Validasi email
     if (!user) {
       throw new UnauthorizedException('Email tidak ditemukan');
     }
   
+    // Cek password menggunakan bcrypt sebelum validasi lainnya
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      throw new UnauthorizedException('Password salah');
+    }
+  
+    // Validasi role
     if (user.role.nama !== 'Kasir') {
       throw new UnauthorizedException('Akses ditolak: Anda bukan kasir');
     }
   
+    // Validasi status akun
     if (user.status === 'tidak aktif') {
-      throw new UnauthorizedException('Akses ditolak: Akun Anda sedang tidak aktif');
+      throw new UnauthorizedException({
+        message: 'Akses ditolak: Akun Anda sedang tidak aktif',
+        statusCode: 401,
+      });
     }
   
+    // Cek jika password default dan belum pernah diubah
     if (password === '123456' && !user.password.includes('$2b$')) {
       return {
         alert: 'Anda perlu mengubah password Anda',
@@ -53,11 +66,7 @@ export class AuthService {
       };
     }
   
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      throw new UnauthorizedException('Password salah');
-    }
-  
+    // Update waktu login terakhir
     user.lastLogin = new Date();
     await this.usersRepository.save(user);
   
@@ -65,18 +74,19 @@ export class AuthService {
     const payload = {
       email: user.email,
       sub: user.id_user,
-      iat: Math.floor(Date.now() / 1000), // Add issued at (current time in seconds)
+      iat: Math.floor(Date.now() / 1000), // Menambahkan waktu dibuatnya token (waktu saat ini dalam detik)
     };
   
-    // Generate token dengan expiresIn
-    const access_token = this.jwtService.sign(payload, { expiresIn: '1h' }); // Set expiration time
+    // Generate token dengan expiresIn 1 jam
+    const access_token = this.jwtService.sign(payload, { expiresIn: '1h' });
   
+    // Kembalikan token dan redirectUrl jika password masih '123456'
     return {
       access_token,
       redirectUrl: user.password === '123456' ? `/edit_password_kasir?id=${user.id_user}` : undefined,
     };
   }
-
+  
   async validateUser(token: string): Promise<User> {
     try {
       const payload = this.jwtService.verify(token);
