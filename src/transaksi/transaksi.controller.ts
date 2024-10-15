@@ -33,25 +33,33 @@ export class TransaksiController {
   @Get('/all')
   async getAllTransaksi(
     @Query('startDate') startDate: string = '2000-01-01', // Default ke awal tahun 2000
-    @Query('endDate') endDate: string = new Date().toISOString().split('T')[0] // Default ke tanggal hari ini
+    @Query('endDate') endDate: string = new Date().toISOString().split('T')[0], // Default ke tanggal hari ini
+    @Query('page') page: number = 1, // Default halaman pertama
+    @Query('limit') limit: number = 10 // Default 10 item per halaman
   ): Promise<{
-    jumlah_produk: number;
-    totalHarga: number;
-    createdAt: Date;
-    metodeTransaksi: string[];
-    user: {
-      id_user: string; // Jika id_user adalah string (misalnya UUID)
-      nama: string;
-    };
-    produkDetail: {
-      id_produk: string; // Jika id_produk adalah string (misalnya UUID)
-      nama_produk: string;
-      jumlah: number;
-      harga: number;
-      total: number;
+    data: {
+      id_transaksi: string; // ID transaksi
+      jumlah_produk: number;
+      totalHarga: number;
+      createdAt: Date;
+      metodeTransaksi: string[];
+      user: {
+        id_user: string; // ID pengguna
+        nama: string; // Nama pengguna
+      };
+      produkDetail: {
+        kode_produk: string; // Kode produk
+        nama_produk: string; // Nama produk
+        jumlah: number; // Jumlah produk
+        harga: number; // Harga produk
+        total: number; // Total harga produk
+      }[];
     }[];
-  }[]> {
-    return this.transaksiService.getAllTransaksi(startDate, endDate);
+    total: number; // Total jumlah transaksi
+    page: number; // Halaman saat ini
+    limit: number; // Jumlah item per halaman
+  }> {
+    return this.transaksiService.getAllTransaksi(startDate, endDate, page, limit);
   }
 
   @Get('count')

@@ -32,7 +32,12 @@ export class TransaksiService {
     });
   }
 
-  async getAllTransaksi(startDate?: string, endDate?: string): Promise<any[]> {
+  async getAllTransaksi(
+    startDate?: string,
+    endDate?: string,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<any> {
     const query = this.transaksiRepository
       .createQueryBuilder('transaksi')
       .leftJoinAndSelect('transaksi.pesanan', 'pesanan')
@@ -41,13 +46,11 @@ export class TransaksiService {
       .leftJoinAndSelect('transaksi.user', 'user')
       .leftJoinAndSelect('detilProdukPesanan.produk', 'produk')
       .orderBy('transaksi.createdAt', 'DESC');
-
+  
+    // Menambahkan filter berdasarkan tanggal
     if (startDate && endDate) {
       if (this.isValidDate(startDate) && this.isValidDate(endDate)) {
-        query.andWhere('transaksi.createdAt BETWEEN :startDate AND :endDate', {
-          startDate,
-          endDate,
-        });
+        query.andWhere('transaksi.createdAt BETWEEN :startDate AND :endDate', { startDate, endDate });
       }
     } else if (startDate) {
       if (this.isValidDate(startDate)) {
@@ -58,37 +61,43 @@ export class TransaksiService {
         query.andWhere('transaksi.createdAt <= :endDate', { endDate });
       }
     }
-
-    const transaksiList = await query.getMany();
-
-    return transaksiList.map((transaksi) => {
-      // Pastikan relasi tidak null sebelum mengakses propertinya
-      const produkDetail =
-        transaksi.pesanan?.detilProdukPesanan?.map((detil) => ({
+  
+    // Pagination
+    const [transaksiList, total] = await query
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
+  
+    return {
+      data: transaksiList.map((transaksi) => {
+        const produkDetail = transaksi.pesanan?.detilProdukPesanan?.map((detil) => ({
           kode_produk: detil.produk?.kode_produk ?? 'N/A',
-          nama_produk: detil.produk?.nama_produk ?? 'N/A', // Sesuaikan jika nama berbeda
+          nama_produk: detil.produk?.nama_produk ?? 'N/A',
           jumlah: detil.jumlah_produk,
           harga: detil.produk?.harga_produk ?? 0,
           total: detil.total_harga_produk,
         })) ?? [];
-
-      const metodeTransaksi =
-        transaksi.metodeTransaksi?.map((metode) => metode.nama) ?? [];
-
-      return {
-        id_transaksi: transaksi.id_transaksi, // Menyertakan id_transaksi
-        jumlah_produk: produkDetail.reduce((acc, item) => acc + item.jumlah, 0),
-        totalHarga: transaksi.totalHarga ?? 0,
-        createdAt: transaksi.createdAt ?? new Date(),
-        metodeTransaksi,
-        user: {
-          id_user: transaksi.user?.id_user ?? 'N/A',
-          nama: transaksi.user?.nama ?? 'N/A',
-        },
-        produkDetail,
-      };
-    });
-  }
+  
+        const metodeTransaksi = transaksi.metodeTransaksi?.map((metode) => metode.nama) ?? [];
+  
+        return {
+          id_transaksi: transaksi.id_transaksi,
+          jumlah_produk: produkDetail.reduce((acc, item) => acc + item.jumlah, 0),
+          totalHarga: transaksi.totalHarga ?? 0,
+          createdAt: transaksi.createdAt ?? new Date(),
+          metodeTransaksi,
+          user: {
+            id_user: transaksi.user?.id_user ?? 'N/A',
+            nama: transaksi.user?.nama ?? 'N/A',
+          },
+          produkDetail,
+        };
+      }),
+      total, // Total jumlah transaksi
+      page, // Halaman saat ini
+      limit, // Jumlah item per halaman
+    };
+  }  
 
   private isValidDate(dateString: string): boolean {
     // Format YYYY-MM-DD
