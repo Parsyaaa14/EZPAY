@@ -29,55 +29,60 @@ export class AuthService {
   async loginForKasir(
     email: string,
     password: string,
-  ): Promise<{ access_token?: string; redirectUrl?: string }> {
+  ): Promise<{ access_token?: string; redirectUrl?: string; id_user?: string; nama?: string; }> {
     const user = await this.usersRepository.findOne({
       where: { email },
       relations: ['role'],
     });
-
+  
     if (!user) {
       throw new UnauthorizedException('Email tidak ditemukan');
     }
-
+  
     // 1. Cek apakah password default digunakan
     if (password === '123456') {
       return {
         redirectUrl: `/edit_password_kasir?id=${user.id_user}`,
       };
     }
-
+  
     // 2. Cek apakah password yang diinput cocok dengan hash di database
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       throw new UnauthorizedException('Password salah');
     }
-
+  
     // 3. Validasi peran dan status akun
     if (user.role.nama !== 'Kasir') {
       throw new UnauthorizedException('Akses ditolak: Anda bukan kasir');
     }
-
+  
     if (user.status === 'tidak aktif') {
       throw new UnauthorizedException({
         message: 'Akun Anda sedang tidak aktif',
         statusCode: 401,
       });
     }
-
+  
     // 4. Simpan waktu login terakhir dan buat token JWT
     user.lastLogin = new Date();
     await this.usersRepository.save(user);
-
+  
     const payload = {
       email: user.email,
       sub: user.id_user,
       iat: Math.floor(Date.now() / 1000),
     };
-
+  
     const access_token = this.jwtService.sign(payload, { expiresIn: '1h' });
-
-    return { access_token };
+  
+    return {
+      access_token,
+      id_user: user.id_user, // Mengembalikan id_user
+      nama: user.nama, // Mengembalikan nama
+    };
   }
+  
 
   async validateUser(token: string): Promise<User> {
     try {
