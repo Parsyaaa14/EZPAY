@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-
+import { RoleEnum } from 'src/users/entities/role.enum';
 import { User } from 'src/users/entities/user.entity';
 import { Toko, StatusToko } from './entities/toko.entity';
 import { Role } from 'src/role/entities/role.entity';
@@ -24,10 +24,7 @@ export class TokoService {
     private readonly roleRepository: Repository<Role>,
   ) {}
 
-  async createTokoWithAdmin(
-    adminDto: CreateUserDto,
-    tokoDto: CreateTokoDto,
-  ) {
+  async createTokoWithAdmin(adminDto: CreateUserDto, tokoDto: CreateTokoDto) {
     const { nama, email, no_handphone, password } = adminDto;
     const { nama_toko, alamat_toko, deskripsi_toko, foto } = tokoDto;
   
@@ -77,7 +74,7 @@ export class TokoService {
       deskripsi_toko,
       foto, // Menyimpan nama file yang diunggah
       status: StatusToko.PENDING, // Status toko default adalah PENDING
-      user: newAdmin, // Hubungkan toko dengan admin yang baru dibuat
+      user: [newAdmin], // Hubungkan toko dengan admin yang baru dibuat
     });
   
     await this.tokoRepository.save(newToko);
@@ -88,7 +85,6 @@ export class TokoService {
       admin: newAdmin,
     };
   }
-  
 
   async getApprovedTokoWithUser() {
     return this.tokoRepository
@@ -102,7 +98,7 @@ export class TokoService {
   async approveToko(id_toko: string, status: StatusToko) {
     const toko = await this.tokoRepository.findOne({
       where: { id_toko },
-      relations: ['user'], // Pastikan relasi dengan User diambil
+      relations: ['users'], // Relasi dengan users (plural)
     });
 
     if (!toko) {
@@ -116,6 +112,13 @@ export class TokoService {
     toko.status = status;
     await this.tokoRepository.save(toko);
 
+    // Mencari user dengan role Admin dari array users
+    const adminUser = toko.user.find((user) => user.role.nama === RoleEnum.ADMIN);
+
+    if (!adminUser) {
+      throw new BadRequestException('Admin tidak ditemukan untuk toko ini');
+    }
+
     return {
       message: `Toko ${toko.nama_toko} berhasil di-${
         status === StatusToko.APPROVED ? 'approve' : 'reject'
@@ -123,14 +126,29 @@ export class TokoService {
       toko: {
         ...toko,
         pemilik: {
-          nama_user: toko.user.nama,
-          email: toko.user.email,
-          no_handphone: toko.user.no_handphone,
+          nama_user: adminUser.nama,
+          email: adminUser.email,
+          no_handphone: adminUser.no_handphone,
         },
       },
     };
   }
 
+  async getTokoByUserId(id_user: string): Promise<{ user: User; toko: Toko }> {
+    const userWithToko = await this.userRepository.findOne({
+      where: { id_user }, // Pastikan ini menggunakan nama kolom yang benar
+      relations: ['toko'], // Sertakan relasi 'toko' untuk memuat data toko terkait
+    });
+  
+    if (!userWithToko || !userWithToko.toko) {
+      throw new Error('Toko not found for this user');
+    }
+  
+    return {
+      user: userWithToko,
+      toko: userWithToko.toko, // Mengembalikan informasi toko
+    };
+  }
   async getTokoByStatus(status: any) {
     return this.tokoRepository.find({
       where: { status }, // Filter berdasarkan status

@@ -42,8 +42,8 @@ export class User {
   @OneToMany(() => Transaksi, (transaksi) => transaksi.user)
   transaksi: Transaksi[];
 
-  @OneToMany(() => Toko, (toko) => toko.user)
-  toko: Toko[];
+  @ManyToOne(() => Toko, (toko) => toko.user)
+  toko: Toko;
 
   @Column({ type: 'varchar', length: 50 })
   nama: string;

@@ -92,6 +92,11 @@ export class TokoController {
     return this.tokoService.getPendingRegistrations();
   }
 
+  @Get('user/:id_user')
+  async getTokoByUserId(@Param('id_user') id_user: string) {
+    return await this.tokoService.getTokoByUserId(id_user);
+  }
+
   @Get('approved')
   async getApprovedToko() {
     const tokos = await this.tokoService.getApprovedToko();

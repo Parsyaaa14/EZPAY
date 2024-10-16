@@ -1,5 +1,5 @@
 // auth.controller.ts
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Res, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ValidateTokoDto } from './dto/validate-toko.dto';
 import { TokoService } from 'src/toko/toko.service';
@@ -17,18 +17,40 @@ export class AuthController {
     return this.authService.loginForKasir(email, password);
   }
 
+  // @Post('login/')
+  // async validateToko(
+  //   @Body() validateTokoDto: ValidateTokoDto,
+  //   @Res() res: Response,
+  //   @Req() req: Request,
+  // ) {
+  //   const { email, password } = validateTokoDto;
+
+  //   const result = await this.authService.validateToko(email, password, res, req); // Kirim res
+
+  //   if (result.redirect) {
+  //     return { redirectUrl: result.redirect }; // Jika toko ditolak, berikan URL redirect ke frontend
+  //   }
+
+  //   return result; // Jika login berhasil atau status pending
+  // }
+  
   @Post('login/')
   async validateToko(@Body() validateTokoDto: ValidateTokoDto) {
     const { email, password } = validateTokoDto;
     const result = await this.authService.validateToko(email, password);
-  
+    
+    // Jika ada URL redirect, kirimkan URL tersebut
     if (result.redirect) {
-      return { redirectUrl: result.redirect }; // Jika toko ditolak, berikan URL redirect ke frontend
+      return { redirectUrl: result.redirect };
     }
-  
-    return result; // Jika login berhasil atau status pending
+
+    // Jika login berhasil, kembalikan token dan pesan
+    return {
+      message: result.message,
+      access_token: result.access_token,
+      id_user: result.user.id_user, // Tambahkan ini jika id_user ada di result
+    };
   }
-  
 
   @Post('login/superadmin')
   async loginForSuperadmin(@Body() body: { email: string; password: string }) {
