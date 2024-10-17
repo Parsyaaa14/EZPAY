@@ -126,14 +126,20 @@ export class ProdukService {
     });
   }
 
-  async findAllAktif(status?: StatusProduk): Promise<Produk[]> {
-    if (status) {
-      return this.produkRepository.find({
-        where: { status_produk: status },
-      });
+  async findAllAktif(status?: StatusProduk, id_toko?: string): Promise<Produk[]> {
+    const queryBuilder = this.produkRepository.createQueryBuilder('produk');
+  
+    if (id_toko) {
+      queryBuilder.andWhere('produk.toko.id_toko = :id_toko', { id_toko });
     }
-    return this.produkRepository.find();
+  
+    if (status) {
+      queryBuilder.andWhere('produk.status_produk = :status', { status });
+    }
+  
+    return await queryBuilder.getMany();
   }
+  
   async searchProduk(nama_produk: string, id_toko: string): Promise<Produk[]> {
     return await this.produkRepository
       .createQueryBuilder('produk')

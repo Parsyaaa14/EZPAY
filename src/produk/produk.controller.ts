@@ -174,9 +174,18 @@ export class ProdukController {
     return await this.produkService.getProdukByStok(sort, kategori);
   }
 
-  @Get()
-  async findAllAktif(@Query('status') status: StatusProduk): Promise<Produk[]> {
-    return this.produkService.findAllAktif(status);
+  @Get('/aktif')
+  async findAllAktif(
+    @Query('status') status?: StatusProduk,
+    @Query('id_toko') id_toko?: string,
+  ): Promise<Produk[]> {
+    try {
+      const products = await this.produkService.findAllAktif(status, id_toko);
+      return products;
+    } catch (error) {
+      console.error('Error fetching active products:', error);
+      throw new InternalServerErrorException('Failed to fetch active products');
+    }
   }
 
   @Get('/search')
