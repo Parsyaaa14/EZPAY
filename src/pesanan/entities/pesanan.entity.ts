@@ -10,6 +10,7 @@ import {
   OneToOne,
   JoinColumn,
   OneToMany,
+  ManyToMany,
 } from 'typeorm';
 
 import { User } from '../../users/entities/user.entity';
@@ -22,8 +23,9 @@ export class Pesanan {
   @PrimaryGeneratedColumn('uuid')
   id_pesanan: string;
 
-  @ManyToOne(() => User, (user) => user.pesanan)
+  @ManyToMany(() => User, (user) => user.pesanan)
   user?: User;
+  
   @OneToOne(() => Transaksi, (transaksi) => transaksi.pesanan)
   transaksi: Transaksi; // Relasi OneToOne, satu pesanan hanya memiliki satu transaksi
 

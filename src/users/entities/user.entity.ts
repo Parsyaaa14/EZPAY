@@ -11,6 +11,7 @@ import {
   BeforeInsert,
   AfterLoad,
   JoinColumn,
+  ManyToMany,
 } from 'typeorm';
 
 import { Role } from '../../role/entities/role.entity';
@@ -34,7 +35,7 @@ export class User {
   @ManyToOne(() => Role, (role) => role.user, { eager: true })
   role: Role;
 
-  @OneToMany(() => Produk, (produk) => produk.user)
+  @ManyToMany(() => Produk, (produk) => produk.user)
   produk: Produk[];
 
   @OneToMany(() => Pesanan, (pesanan) => pesanan.user)
