@@ -179,11 +179,18 @@ export class ProdukController {
     return this.produkService.findAllAktif(status);
   }
 
-  @Get('search')
+  @Get('/search')
   async searchProduk(
     @Query('nama_produk') nama_produk: string,
+    @Query('id_toko') id_toko: string,
   ): Promise<Produk[]> {
-    return this.produkService.searchProduk(nama_produk);
+    try {
+      const products = await this.produkService.searchProduk(nama_produk, id_toko);
+      return products;
+    } catch (error) {
+      console.error('Error searching for products:', error);
+      throw new InternalServerErrorException('Failed to search for products');
+    }
   }
 
   @Get(':id')

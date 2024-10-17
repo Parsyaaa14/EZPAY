@@ -134,11 +134,12 @@ export class ProdukService {
     }
     return this.produkRepository.find();
   }
-
-  async searchProduk(nama_produk: string): Promise<Produk[]> {
+  async searchProduk(nama_produk: string, id_toko: string): Promise<Produk[]> {
     return await this.produkRepository
       .createQueryBuilder('produk')
+      .innerJoin('produk.toko', 'toko') // Menggunakan inner join untuk menghubungkan produk dengan toko
       .where('produk.nama_produk ILIKE :nama', { nama: `%${nama_produk}%` }) // ILIKE untuk pencarian case-insensitive
+      .andWhere('toko.id_toko = :id_toko', { id_toko }) // Filter berdasarkan id_toko
       .getMany();
   }
 
@@ -200,17 +201,6 @@ export class ProdukService {
     Object.assign(produk, updateData);
 
     return this.produkRepository.save(produk);
-  }
-
-  private generateRandomCode(): string {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; // Huruf dan angka
-    let result = '';
-    for (let i = 0; i < 6; i++) {
-      result += characters.charAt(
-        Math.floor(Math.random() * characters.length),
-      );
-    }
-    return result;
   }
 
   async getAllProduk(id_toko: string): Promise<number> {
