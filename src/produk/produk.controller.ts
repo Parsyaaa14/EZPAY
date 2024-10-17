@@ -169,9 +169,10 @@ export class ProdukController {
   @Get('by-stok')
   async getProdukByStok(
     @Query('sort') sort: 'ASC' | 'DESC',
-    @Query('kategori') kategori?: string,
+    @Query('id_toko') id_toko: string,
+    @Query('id_kategori') id_kategori?: string,
   ): Promise<Produk[]> {
-    return await this.produkService.getProdukByStok(sort, kategori);
+    return this.produkService.getProdukByStok(sort, id_toko, id_kategori);
   }
 
   @Get('/aktif')

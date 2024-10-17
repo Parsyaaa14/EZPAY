@@ -106,19 +106,22 @@ export class ProdukService {
 
   async getProdukByStok(
     sort: 'ASC' | 'DESC',
-    kategori?: string,
+    id_toko: string,
+    id_kategori?: string,
   ): Promise<Produk[]> {
     const queryBuilder = this.produkRepository
       .createQueryBuilder('produk')
       .leftJoinAndSelect('produk.kategori', 'kategori') // Menggabungkan entitas kategori
+      .where('produk.toko_id_toko = :id_toko', { id_toko }) // Menambahkan filter berdasarkan id_toko
       .orderBy('produk.stok', sort);
-
-    if (kategori) {
-      queryBuilder.andWhere('kategori.nama = :kategori', { kategori }); // Gunakan nama kolom yang benar dari entitas Kategori
+  
+    if (id_kategori) {
+      queryBuilder.andWhere('produk.id_kategori = :id_kategori', { id_kategori }); // Menggunakan ID kategori
     }
-
+  
     return await queryBuilder.getMany();
   }
+  
 
   async findAll() {
     return this.produkRepository.findAndCount({

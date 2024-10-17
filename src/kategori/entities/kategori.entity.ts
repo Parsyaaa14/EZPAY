@@ -19,7 +19,7 @@ export class Kategori {
   @PrimaryGeneratedColumn('uuid')
   id_kategori: string;
 
-  @ManyToOne(() => Toko, (toko) => toko.kategori)
+  @ManyToOne(() => Toko, (toko) => toko.kategori, { eager: true })
   @JoinColumn({ name: 'id_toko' })
   toko: Toko;
 
