@@ -10,6 +10,7 @@ import {
   ManyToOne,
   BeforeInsert,
   AfterLoad,
+  JoinColumn,
   ManyToMany,
 } from 'typeorm';
 
@@ -44,6 +45,7 @@ export class User {
   transaksi: Transaksi[];
 
   @ManyToOne(() => Toko, (toko) => toko.user)
+  @JoinColumn({ name: 'id_toko' }) // Sesuaikan dengan nama kolom di database
   toko: Toko;
 
   @Column({ type: 'varchar', length: 50 })

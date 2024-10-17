@@ -16,6 +16,7 @@ import {
   NotFoundException,
   InternalServerErrorException,
   Res,
+  Req,
 } from '@nestjs/common';
 import { ProdukService } from './produk.service';
 import { CreateProdukDto } from './dto/create-produk.dto';
@@ -28,6 +29,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { join } from 'path/posix';
 import { of } from 'rxjs';
+import { Request } from '@nestjs/common';
 
 @Controller('produk')
 export class ProdukController {
@@ -75,29 +77,60 @@ export class ProdukController {
     }
   }
 
+    // @Public()
+    @Get('/toko/:id_toko')
+    async getProductsByToko(@Param('id_toko') id_toko: string) {
+      try {
+        const products = await this.produkService.findProductsByToko(id_toko);
+        return products;
+      } catch (error) {
+        console.error('Error fetching products for toko:', error);
+        throw new InternalServerErrorException(
+          'Failed to fetch products for toko',
+        );
+      }
+    }
+  
+
   // @Public()
-  @Get('/toko/:id_toko')
-  async getProductsByToko(@Param('id_toko') id_toko: string) {
+  @Get('/filter-min-stok/toko/:id_toko')
+  async getFilteredProdukMinStok(@Param('id_toko') id_toko: string) {
     try {
-      const products = await this.produkService.findProductsByToko(id_toko);
-      return products;
+      const produk = await this.produkService.filterProdukMinStok(id_toko);
+      return produk;
     } catch (error) {
-      console.error('Error fetching products for toko:', error);
+      console.error('Error fetching filtered products for toko:', error);
       throw new InternalServerErrorException(
-        'Failed to fetch products for toko',
+        'Failed to fetch filtered products for toko',
       );
     }
   }
+
 
   @Get('/image/:image')
   getImage(@Param('image') image: string, @Res() res: any) {
     return of(res.sendFile(join(process.cwd(), `uploads/products/${image}`)));
   }
 
-  @Get('filter-stok')
-  async filterProduk(): Promise<Produk[]> {
-    return this.produkService.filterProdukMinStok();
+
+
+
+  @Get('filter-by-user')
+  async getFilteredProdukByUser(
+    @Query('id_user') id_user: string, // Mengambil id_user dari URL
+    @Query('sort') sort: 'ASC' | 'DESC' = 'ASC', // Default sort adalah ASC
+  ): Promise<Produk[]> {
+    // Validasi id_user dan sort
+    if (!id_user) {
+      throw new BadRequestException('id_user harus diisi');
+    }
+    if (sort !== 'ASC' && sort !== 'DESC') {
+      throw new BadRequestException('Sort harus ASC atau DESC');
+    }
+
+    return this.produkService.filterProdukByUser(id_user, sort);
   }
+  
 
   // @Get('filter')
   // async filterProdukkategori(@Query('kategori') kategori: string): Promise<Produk[]> {
@@ -121,9 +154,8 @@ export class ProdukController {
   }
 
   @Get('count')
-  async getAllProduk(): Promise<{ jumlahProduk: number }> {
-    const jumlah = await this.produkService.getAllProduk();
-    return { jumlahProduk: jumlah };
+  async getCount(@Query('id_toko') id_toko: string): Promise<number> {
+    return await this.produkService.getAllProduk(id_toko);
   }
 
   @Get('by-harga')
@@ -147,11 +179,18 @@ export class ProdukController {
     return this.produkService.findAllAktif(status);
   }
 
-  @Get('search')
+  @Get('/search')
   async searchProduk(
     @Query('nama_produk') nama_produk: string,
+    @Query('id_toko') id_toko: string,
   ): Promise<Produk[]> {
-    return this.produkService.searchProduk(nama_produk);
+    try {
+      const products = await this.produkService.searchProduk(nama_produk, id_toko);
+      return products;
+    } catch (error) {
+      console.error('Error searching for products:', error);
+      throw new InternalServerErrorException('Failed to search for products');
+    }
   }
 
   @Get(':id')
