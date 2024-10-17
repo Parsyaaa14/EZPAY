@@ -4,9 +4,10 @@ import { ProdukController } from './produk.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Produk } from './entities/produk.entity';
 import { Kategori } from 'src/kategori/entities/kategori.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Produk,Kategori])],
+  imports: [TypeOrmModule.forFeature([Produk,Kategori,User])],
   controllers: [ProdukController],
   providers: [ProdukService]
 })

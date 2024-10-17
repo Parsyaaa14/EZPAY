@@ -12,6 +12,7 @@ import { Produk, StatusProduk } from './entities/produk.entity';
 import { Repository, MoreThan } from 'typeorm';
 import { EntityNotFoundError } from 'typeorm';
 import { Kategori } from 'src/kategori/entities/kategori.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class ProdukService {
@@ -20,6 +21,8 @@ export class ProdukService {
     private produkRepository: Repository<Produk>,
     @InjectRepository(Kategori)
     private readonly kategoriRepository: Repository<Kategori>,
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>,
   ) {}
 
   async createProduk(createProdukDto: CreateProdukDto): Promise<Produk> {
@@ -54,13 +57,21 @@ export class ProdukService {
     }
   }
 
-  async filterProdukMinStok(): Promise<Produk[]> {
-    // Query untuk mendapatkan produk dengan stok lebih dari 0, diurutkan dari stok terkecil
+  async filterProdukByUser(id_user: string, sort: 'ASC' | 'DESC'): Promise<Produk[]> {
+    // Mendapatkan user
+    const user = await this.usersRepository.findOne({ where: { id_user }, relations: ['toko'] });
+
+    if (!user || !user.toko) {
+      throw new NotFoundException('User atau Toko tidak ditemukan');
+    }
+
+    const id_toko = user.toko.id_toko; // Mengambil id_toko dari user
+
+    // Query untuk mendapatkan produk berdasarkan id_toko, diurutkan sesuai sort
     const produk = await this.produkRepository
       .createQueryBuilder('produk')
-      .where('produk.stok > 0')
-      .orderBy('produk.stok', 'ASC')
-      .limit(2)
+      .where('produk.id_toko = :id_toko', { id_toko })
+      .orderBy('produk.nama_produk', sort) // Mengatur pengurutan berdasarkan nama produk
       .getMany();
 
     return produk;
@@ -202,9 +213,14 @@ export class ProdukService {
     return result;
   }
 
-  async getAllProduk(): Promise<number> {
-    // Menghitung jumlah produk yang ada di database
-    const count = await this.produkRepository.count();
+  async getAllProduk(id_toko: string): Promise<number> {
+    // Menghitung jumlah produk yang ada di database berdasarkan id_toko
+    const count = await this.produkRepository
+      .createQueryBuilder('produk')
+      .leftJoin('produk.toko', 'toko')
+      .where('toko.id_toko = :id_toko', { id_toko })
+      .getCount();
+
     return count;
   }
 
@@ -215,6 +231,21 @@ export class ProdukService {
       .where('toko.id_toko = :id_toko', { id_toko })
       .getMany();
   }
+
+  async filterProdukMinStok(id_toko: string): Promise<Produk[]> {
+    // Query untuk mendapatkan produk dengan stok lebih dari 0, diurutkan dari stok terkecil
+    const produk = await this.produkRepository
+      .createQueryBuilder('produk')
+      .innerJoin('produk.toko', 'toko') // Menggunakan inner join untuk menghubungkan produk dengan toko
+      .where('produk.stok > 0')
+      .andWhere('toko.id_toko = :id_toko', { id_toko }) // Filter berdasarkan id_toko dari relasi
+      .orderBy('produk.stok', 'ASC')
+      .limit(2)
+      .getMany();
+  
+    return produk;
+  }
+  
 
   async remove(id: string) {
     try {
