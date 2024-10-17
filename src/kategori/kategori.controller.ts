@@ -1,70 +1,69 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, HttpStatus, ParseUUIDPipe, Query, BadRequestException, HttpException, Res, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Put,
+  Param,
+  Delete,
+  HttpStatus,
+  ParseUUIDPipe,
+  Query,
+  BadRequestException,
+  HttpException,
+  Res,
+  NotFoundException,
+} from '@nestjs/common';
 import { KategoriService } from './kategori.service';
 import { CreateKategoriDto } from './dto/create-kategori.dto';
 import { UpdateKategoriDto } from './dto/update-kategori.dto';
 import { Produk } from 'src/produk/entities/produk.entity';
 import { Kategori } from './entities/kategori.entity';
+import { Toko } from 'src/toko/entities/toko.entity';
 
 @Controller('kategori')
 export class KategoriController {
   constructor(private readonly kategoriService: KategoriService) {}
 
   @Post()
-  async create(@Body() createKategoriDto: CreateKategoriDto) {
+  async create(
+    @Body() createKategoriDto: CreateKategoriDto,
+    @Query('id_toko') id_toko: string,
+  ) {
+    const kategori = await this.kategoriService.create(createKategoriDto, id_toko);
     return {
-      data: await this.kategoriService.create(createKategoriDto),
+      data: kategori,
       statusCode: HttpStatus.CREATED,
-      message: 'success',
+      message: 'Kategori berhasil dibuat',
     };
   }
-
 
   @Get('/produk/:idKategori')
   async getProdukByKategori(@Param('idKategori') idKategori: string): Promise<Produk[]> {
     const produk = await this.kategoriService.filterProdukByKategori(idKategori);
   
-    if (!produk || produk.length === 0) {
-      return []; // Pastikan mengembalikan array kosong
-    }
-  
-    return produk;
+    return produk; // Mengembalikan produk, jika tidak ada produk yang ditemukan maka akan mengembalikan array kosong
   }
   
-  @Get('/produk-count')
-  async getProdukCountPerKategori() {
-    try {
-      const result = await this.kategoriService.countProdukInKategori();
-      return {
-        data: result,
-        statusCode: HttpStatus.OK,
-        message: 'success',
-      };
-    } catch (error) {
-      throw new HttpException(
-        `Gagal mendapatkan jumlah produk per kategori: ${error.message}`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+// Di KategoriController
+@Get('kategori-by-toko')
+async findByToko(@Query('id_toko') id_toko: string) {
+  if (!id_toko) {
+    throw new HttpException('id_toko is required', HttpStatus.BAD_REQUEST);
   }
-  
-
-  // @Get('filter-produk/:namaKategori')
-  // async filterProdukByKategori(@Param('namaKategori') namaKategori: string): Promise<Produk[]> {
-  //   try {
-  //     return await this.kategoriService.filterProdukByKategori(namaKategori);
-  //   } catch (error) {
-  //     throw new HttpException(
-  //       `Gagal memfilter produk berdasarkan kategori: ${error.message}`,
-  //       HttpStatus.NOT_FOUND,
-  //     );
-  //   }
-  // }
+  const kategori = await this.kategoriService.kategoriByToko(id_toko);
+  return {
+    data: kategori,
+    statusCode: HttpStatus.OK,
+    message: 'Kategori ditemukan',
+  };
+}
 
 
   @Get()
   async findAll() {
     const [data, count] = await this.kategoriService.findAll();
-        return {
+    return {
       data,
       count,
       statusCode: HttpStatus.OK,
@@ -73,8 +72,7 @@ export class KategoriController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseUUIDPipe) id: string
-  ){
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
     return {
       data: await this.kategoriService.findOne(id),
       statusCode: HttpStatus.OK,
@@ -90,25 +88,6 @@ export class KategoriController {
     }
     return { data: kategori };
   }
-  
-  
-
-
-  // @Put(':id_kategori')
-  // async updateNamaKategori(
-  //   @Param('id_kategori') id_kategori: string,
-  //   @Body() updateKategoriDto: UpdateKategoriDto,
-  // ): Promise<void> {
-  //   try {
-  //     const { nama } = updateKategoriDto; // DTO akan mengandung input nama baru
-  //     await this.kategoriService.updateNamaKategori(id_kategori, nama);
-  //   } catch (error) {
-  //     throw new HttpException(
-  //       `Gagal memperbarui nama kategori: ${error.message}`,
-  //       HttpStatus.BAD_REQUEST,
-  //     );
-  //   }
-  // }
 
   @Put('update/:namaLama')
   async updateKategori(
@@ -135,4 +114,3 @@ export class KategoriController {
     };
   }
 }
-

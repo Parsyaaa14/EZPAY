@@ -14,6 +14,7 @@ import {
 import { User } from '../../users/entities/user.entity';
 import { Produk } from 'src/produk/entities/produk.entity';
 import { Pesanan } from 'src/pesanan/entities/pesanan.entity';
+import { Kategori } from 'src/kategori/entities/kategori.entity';
 
 export enum StatusToko {
   PENDING = 'pending',
@@ -27,6 +28,9 @@ export class Toko {
 
   @OneToMany(() => Produk, (produk) => produk.toko)
   produk?: Produk[];
+
+  @OneToMany(() => Kategori, (kategori) => kategori.toko)
+  kategori?: Kategori[];
 
   @OneToOne(() => Pesanan, (pesanan) => pesanan.toko)
   pesanan: Pesanan;
