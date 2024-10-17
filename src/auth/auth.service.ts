@@ -127,26 +127,29 @@ export class AuthService {
     }
   
     if (toko.status === StatusToko.REJECTED) {
-      return { redirect: '/toko-rejected-page' }; // Ganti '/toko-rejected-page' dengan path yang sesuai
+      return { redirect: '/toko-rejected-page' }; // Redirect jika toko ditolak
     }
   
     // Generate JWT token
     const payload = {
       email: user.email,
       sub: user.id_user,
+      id_toko: toko.id_toko, // Tambahkan id_toko ke payload JWT
       iat: Math.floor(Date.now() / 1000),
     };
     const access_token = this.jwtService.sign(payload);
   
     console.log(`Toko ${toko.nama_toko} berhasil login dengan status ${toko.status}`);
   
-    // Kembalikan hasil login termasuk user
+    // Kembalikan hasil login termasuk user dan id_toko
     return {
       message: 'Login berhasil',
       access_token,
-      user: { id_user: user.id_user, email: user.email }, // Menambahkan informasi user
+      user: { id_user: user.id_user, email: user.email },
+      id_toko: toko.id_toko, // Kembalikan id_toko
     };
   }
+  
 
   // async validateToko(
   //   email: string,
