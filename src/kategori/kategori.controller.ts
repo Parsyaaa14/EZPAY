@@ -20,6 +20,7 @@ import { UpdateKategoriDto } from './dto/update-kategori.dto';
 import { Produk } from 'src/produk/entities/produk.entity';
 import { Kategori } from './entities/kategori.entity';
 import { Toko } from 'src/toko/entities/toko.entity';
+import { UUID } from 'crypto';
 
 @Controller('kategori')
 export class KategoriController {
@@ -48,16 +49,22 @@ export class KategoriController {
 // Di KategoriController
 @Get('kategori-by-toko')
 async findByToko(@Query('id_toko') id_toko: string) {
+  id_toko = id_toko.trim(); // Hilangkan spasi atau newline
+
   if (!id_toko) {
     throw new HttpException('id_toko is required', HttpStatus.BAD_REQUEST);
   }
-  const kategori = await this.kategoriService.kategoriByToko(id_toko);
+
+  console.log('ID Toko (trimmed):', id_toko); // Debugging
+
+  const kategori = await this.kategoriService.countProdukPerKategoriByToko(id_toko);
   return {
     data: kategori,
     statusCode: HttpStatus.OK,
     message: 'Kategori ditemukan',
   };
 }
+
 
 
   @Get()
@@ -89,13 +96,13 @@ async findByToko(@Query('id_toko') id_toko: string) {
     return { data: kategori };
   }
 
-  @Put('update/:namaLama')
+  @Put('update/:idKategori')
   async updateKategori(
-    @Param('namaLama') namaLama: string,
+    @Param('idKategori') idKategori: string, // Sesuaikan menjadi string (UUID)
     @Body() updateKategoriDto: UpdateKategoriDto,
   ): Promise<void> {
     try {
-      await this.kategoriService.updateKategori(namaLama, updateKategoriDto);
+      await this.kategoriService.updateKategori(idKategori, updateKategoriDto);
     } catch (error) {
       throw new HttpException(
         `Gagal memperbarui kategori: ${error.message}`,
@@ -103,6 +110,8 @@ async findByToko(@Query('id_toko') id_toko: string) {
       );
     }
   }
+  
+  
 
   @Delete(':id')
   async remove(@Param('id', ParseUUIDPipe) id: string) {

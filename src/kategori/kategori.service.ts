@@ -2,6 +2,8 @@ import {
   Injectable,
   HttpException,
   HttpStatus,
+  NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { CreateKategoriDto } from './dto/create-kategori.dto';
 import { UpdateKategoriDto } from './dto/update-kategori.dto';
@@ -66,24 +68,28 @@ export class KategoriService {
       const kategoriList = await this.kategoriRepository.find({
         where: { toko: { id_toko: id_toko } }, // Pastikan ini sesuai dengan skema database
       });
-      
+      console.log('Kategori List:', kategoriList); // Log kategori yang ditemukan
+  
       const produkCountPerKategori = await Promise.all(
         kategoriList.map(async (kategori) => {
           const produkCount = await this.produkRepository.count({
             where: { kategori: { id_kategori: kategori.id_kategori } },
           });
           return {
+            idKategori: kategori.id_kategori,
             kategori: kategori.nama,
             jumlahProduk: produkCount,
           };
         }),
       );
-
+  
       return produkCountPerKategori;
     } catch (error) {
       throw new Error(`Gagal menghitung produk per kategori: ${error.message}`);
     }
   }
+  
+
 
   async findAllByToko(id_toko: string): Promise<Kategori[]> {
     try {
@@ -126,6 +132,7 @@ export class KategoriService {
           });
 
           return {
+            idKategori: kategori.id_kategori,
             kategori: kategori.nama,
             jumlahProduk: produkCount,
           };
@@ -174,37 +181,61 @@ export class KategoriService {
     }
   }
 
-  async updateKategori(namaLama: string, updateKategoriDto: UpdateKategoriDto): Promise<void> {
+  async updateKategori(
+    idKategori: string, // UUID
+    updateKategoriDto: UpdateKategoriDto,
+  ): Promise<void> {
     const { namaBaru } = updateKategoriDto;
-
+  
+    if (!namaBaru) {
+      throw new HttpException('Nama baru tidak boleh kosong', HttpStatus.BAD_REQUEST);
+    }
+  
+    console.log('Mencari kategori dengan ID:', idKategori);
+  
     try {
       const kategori = await this.kategoriRepository.findOne({
-        where: { nama: namaLama },
+        where: { id_kategori: idKategori },
         relations: ['produk'],
       });
-
+  
       if (!kategori) {
-        throw new Error('Kategori tidak ditemukan');
+        console.error(`Kategori dengan ID ${idKategori} tidak ditemukan`);
+        throw new HttpException('Kategori tidak ditemukan', HttpStatus.NOT_FOUND);
       }
-
+  
+      console.log('Kategori ditemukan:', kategori);
+  
+      // Update nama kategori
       kategori.nama = namaBaru;
       await this.kategoriRepository.save(kategori);
-
+      console.log('Kategori berhasil diperbarui:', kategori);
+  
+      // Update nama kategori pada produk terkait
       const produkTerkait = await this.produkRepository.find({
-        where: { kategori: { id_kategori: kategori.id_kategori } },
+        where: { kategori: { id_kategori: idKategori } },
       });
-
-      await Promise.all(produkTerkait.map((produk) => {
-        if (produk.kategori) {
+  
+      console.log('Produk terkait ditemukan:', produkTerkait);
+  
+      await Promise.all(
+        produkTerkait.map((produk) => {
           produk.kategori.nama = namaBaru;
           return this.produkRepository.save(produk);
-        }
-        return Promise.resolve();
-      }));
+        }),
+      );
+  
+      console.log('Produk terkait berhasil diperbarui');
     } catch (error) {
-      throw new Error(`Gagal memperbarui kategori: ${error.message}`);
+      console.error('Kesalahan saat memperbarui kategori:', error);
+      throw new HttpException(
+        `Gagal memperbarui kategori: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
+  
+
 
   async findByName(nama: string): Promise<Kategori | null> {
     return this.kategoriRepository.findOne({ where: { nama: nama } });
