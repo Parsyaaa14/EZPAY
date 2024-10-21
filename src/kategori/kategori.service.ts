@@ -208,47 +208,40 @@ export class KategoriService {
     }
   }
 
-  async updateKategori(namaLama: string, updateKategoriDto: UpdateKategoriDto): Promise<void> {
+  async updateKategori(idKategori: string, updateKategoriDto: UpdateKategoriDto): Promise<void> {
     const { namaBaru } = updateKategoriDto;
-  
+
     if (!namaBaru) {
       throw new HttpException('Nama baru tidak boleh kosong', HttpStatus.BAD_REQUEST);
     }
-  
-    console.log('Mencari kategori dengan ID:', idKategori);
-  
+
     try {
       const kategori = await this.kategoriRepository.findOne({
         where: { id_kategori: idKategori },
         relations: ['produk'],
       });
-  
+
       if (!kategori) {
-        console.error(`Kategori dengan ID ${idKategori} tidak ditemukan`);
         throw new HttpException('Kategori tidak ditemukan', HttpStatus.NOT_FOUND);
       }
-  
-      console.log('Kategori ditemukan:', kategori);
-  
-      // Update nama kategori
+
       kategori.nama = namaBaru;
       await this.kategoriRepository.save(kategori);
-      console.log('Kategori berhasil diperbarui:', kategori);
-  
-      // Update nama kategori pada produk terkait
+
       const produkTerkait = await this.produkRepository.find({
-        where: { kategori: { id_kategori: idKategori } },
+        where: { kategori: { id_kategori: kategori.id_kategori } },
       });
 
-      await Promise.all(produkTerkait.map((produk) => {
-        if (produk.kategori) {
-          produk.kategori.nama = namaBaru;
-          return this.produkRepository.save(produk);
-        }
-        return Promise.resolve();
-      }));
+      await Promise.all(
+        produkTerkait.map((produk) => {
+          if (produk.kategori) {
+            produk.kategori.nama = namaBaru;
+            return this.produkRepository.save(produk);
+          }
+          return Promise.resolve();
+        }),
+      );
     } catch (error) {
-      console.error('Kesalahan saat memperbarui kategori:', error);
       throw new HttpException(
         `Gagal memperbarui kategori: ${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -256,7 +249,6 @@ export class KategoriService {
     }
   }
   
-
 
   async findByName(nama: string): Promise<Kategori | null> {
     return this.kategoriRepository.findOne({ where: { nama: nama } });

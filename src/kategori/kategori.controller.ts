@@ -98,7 +98,7 @@ async findByToko(@Query('id_toko') id_toko: string) {
 
   @Put('update/:idKategori')
   async updateKategori(
-    @Param('idKategori') idKategori: string, // Sesuaikan menjadi string (UUID)
+    @Param('idKategori') idKategori: string,
     @Body() updateKategoriDto: UpdateKategoriDto,
   ): Promise<void> {
     try {
@@ -111,8 +111,6 @@ async findByToko(@Query('id_toko') id_toko: string) {
     }
   }
   
-  
-
   @Delete(':id')
   async remove(@Param('id', ParseUUIDPipe) id: string) {
     await this.kategoriService.remove(id);
