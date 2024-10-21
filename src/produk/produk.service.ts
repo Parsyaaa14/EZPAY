@@ -57,6 +57,47 @@ export class ProdukService {
     }
   }
 
+  // async getProdukByStatus(status: string, idToko: string): Promise<Produk[]> {
+  //   try {
+  //     const queryBuilder = this.produkRepository.createQueryBuilder('produk');
+
+  //     // Filter berdasarkan id_toko
+  //     queryBuilder.where('produk.toko_id_toko = :idToko', { idToko });
+
+  //     // Jika status bukan 'all', tambahkan filter untuk status
+  //     if (status && status !== 'all') {
+  //       queryBuilder.andWhere('produk.status_produk = :status', { status });
+  //     }
+
+  //     const produk = await queryBuilder.getMany();
+
+  //     return produk.length ? produk : []; // Mengembalikan array kosong jika tidak ada produk
+  //   } catch (error) {
+  //     throw new Error(`Gagal mengambil produk: ${error.message}`);
+  //   }
+  // }
+
+
+  async filterProdukByKategori(
+    id_toko: string, // Pastikan id_toko adalah parameter wajib
+    id_kategori: string, // id_kategori tetap opsional jika diinginkan
+  ): Promise<Produk[]> {
+    try {
+      const produk = await this.produkRepository.find({
+        where: {
+          kategori: { id_kategori }, // Filter berdasarkan kategori
+          toko: { id_toko }, // Tambahkan filter berdasarkan id_toko
+        },
+      });
+
+      return produk.length ? produk : []; // Mengembalikan array kosong jika tidak ada produk
+    } catch (error) {
+      throw new Error(
+        `Gagal memfilter produk berdasarkan kategori dan toko: ${error.message}`,
+      );
+    }
+  }
+
   async filterProdukByUser(id_user: string, sort: 'ASC' | 'DESC'): Promise<Produk[]> {
     // Mendapatkan user
     const user = await this.usersRepository.findOne({ where: { id_user }, relations: ['toko'] });
@@ -90,17 +131,19 @@ export class ProdukService {
 
   async getProdukByHarga(
     sort: 'ASC' | 'DESC',
+    id_toko: string, // Tambahkan parameter id_toko
     kategori?: string,
   ): Promise<Produk[]> {
     const queryBuilder = this.produkRepository
       .createQueryBuilder('produk')
       .leftJoinAndSelect('produk.kategori', 'kategori') // Menggabungkan entitas kategori
+      .where('produk.toko_id_toko = :id_toko', { id_toko }) // Menambahkan filter berdasarkan id_toko
       .orderBy('produk.harga_produk', sort);
-
+  
     if (kategori) {
       queryBuilder.andWhere('kategori.nama = :kategori', { kategori }); // Gunakan nama kolom yang benar dari entitas Kategori
     }
-
+  
     return await queryBuilder.getMany();
   }
 

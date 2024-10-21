@@ -19,7 +19,7 @@ import { CreateKategoriDto } from './dto/create-kategori.dto';
 import { UpdateKategoriDto } from './dto/update-kategori.dto';
 import { Produk } from 'src/produk/entities/produk.entity';
 import { Kategori } from './entities/kategori.entity';
-import { Toko } from 'src/toko/entities/toko.entity';
+import { ProdukService } from 'src/produk/produk.service';
 
 @Controller('kategori')
 export class KategoriController {
@@ -30,35 +30,39 @@ export class KategoriController {
     @Body() createKategoriDto: CreateKategoriDto,
     @Query('id_toko') id_toko: string,
   ) {
-    const kategori = await this.kategoriService.create(createKategoriDto, id_toko);
+    const kategori = await this.kategoriService.create(
+      createKategoriDto,
+      id_toko,
+    );
     return {
       data: kategori,
       statusCode: HttpStatus.CREATED,
       message: 'Kategori berhasil dibuat',
     };
   }
-
-  @Get('/produk/:idKategori')
-  async getProdukByKategori(@Param('idKategori') idKategori: string): Promise<Produk[]> {
-    const produk = await this.kategoriService.filterProdukByKategori(idKategori);
   
-    return produk; // Mengembalikan produk, jika tidak ada produk yang ditemukan maka akan mengembalikan array kosong
-  }
-  
-// Di KategoriController
-@Get('kategori-by-toko')
-async findByToko(@Query('id_toko') id_toko: string) {
-  if (!id_toko) {
-    throw new HttpException('id_toko is required', HttpStatus.BAD_REQUEST);
-  }
-  const kategori = await this.kategoriService.kategoriByToko(id_toko);
-  return {
-    data: kategori,
-    statusCode: HttpStatus.OK,
-    message: 'Kategori ditemukan',
-  };
-}
 
+  @Get('by-kategori')
+  async filterProdukByKategori(
+    @Query('id_kategori') idKategori: string,
+    @Query('id_toko') idToko: string,
+  ): Promise<Produk[]> {
+    return this.kategoriService.filterProdukByKategori(idKategori, idToko);
+  }
+
+  // Di KategoriController
+  @Get('kategori-by-toko')
+  async findByToko(@Query('id_toko') id_toko: string) {
+    if (!id_toko) {
+      throw new HttpException('id_toko is required', HttpStatus.BAD_REQUEST);
+    }
+    const kategori = await this.kategoriService.kategoriByToko(id_toko);
+    return {
+      data: kategori,
+      statusCode: HttpStatus.OK,
+      message: 'Kategori ditemukan',
+    };
+  }
 
   @Get()
   async findAll() {
@@ -84,7 +88,9 @@ async findByToko(@Query('id_toko') id_toko: string) {
   async findByName(@Query('nama') nama: string): Promise<{ data: Kategori }> {
     const kategori = await this.kategoriService.findByName(nama);
     if (!kategori) {
-      throw new NotFoundException(`Kategori dengan nama ${nama} tidak ditemukan`);
+      throw new NotFoundException(
+        `Kategori dengan nama ${nama} tidak ditemukan`,
+      );
     }
     return { data: kategori };
   }

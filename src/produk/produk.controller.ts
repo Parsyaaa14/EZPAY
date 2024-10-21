@@ -76,21 +76,35 @@ export class ProdukController {
       );
     }
   }
+  // @Get()
+  // async getProdukByStatus(
+  //   @Query('status') status: string, // Parameter status
+  //   @Query('id_toko') idToko: string, // Parameter id_toko
+  // ): Promise<Produk[]> {
+  //   return this.produkService.getProdukByStatus(status, idToko);
+  // }
 
-    // @Public()
-    @Get('/toko/:id_toko')
-    async getProductsByToko(@Param('id_toko') id_toko: string) {
-      try {
-        const products = await this.produkService.findProductsByToko(id_toko);
-        return products;
-      } catch (error) {
-        console.error('Error fetching products for toko:', error);
-        throw new InternalServerErrorException(
-          'Failed to fetch products for toko',
-        );
-      }
+  @Get('by-kategori')
+  async filterProdukByKategori(
+    @Query('id_kategori') idKategori: string,
+    @Query('id_toko') idToko: string,
+  ): Promise<Produk[]> {
+    return this.produkService.filterProdukByKategori(idKategori, idToko);
+  }
+
+  // @Public()
+  @Get('/toko/:id_toko')
+  async getProductsByToko(@Param('id_toko') id_toko: string) {
+    try {
+      const products = await this.produkService.findProductsByToko(id_toko);
+      return products;
+    } catch (error) {
+      console.error('Error fetching products for toko:', error);
+      throw new InternalServerErrorException(
+        'Failed to fetch products for toko',
+      );
     }
-  
+  }
 
   // @Public()
   @Get('/filter-min-stok/toko/:id_toko')
@@ -106,14 +120,10 @@ export class ProdukController {
     }
   }
 
-
   @Get('/image/:image')
   getImage(@Param('image') image: string, @Res() res: any) {
     return of(res.sendFile(join(process.cwd(), `uploads/products/${image}`)));
   }
-
-
-
 
   @Get('filter-by-user')
   async getFilteredProdukByUser(
@@ -130,28 +140,7 @@ export class ProdukController {
 
     return this.produkService.filterProdukByUser(id_user, sort);
   }
-  
 
-  // @Get('filter')
-  // async filterProdukkategori(@Query('kategori') kategori: string): Promise<Produk[]> {
-  //   if (!kategori) {
-  //     throw new BadRequestException('Kategori parameter is missing');
-  //   }
-
-  //   return this.produkService.filterProdukByKategori(kategori);
-  // }
-
-  @Get('all')
-  async findAll() {
-    const [data, count] = await this.produkService.findAll();
-
-    return {
-      data,
-      count,
-      statusCode: HttpStatus.OK,
-      message: 'success',
-    };
-  }
 
   @Get('count')
   async getCount(@Query('id_toko') id_toko: string): Promise<number> {
@@ -161,9 +150,10 @@ export class ProdukController {
   @Get('by-harga')
   async getProdukByHarga(
     @Query('sort') sort: 'ASC' | 'DESC',
+    @Query('id_toko') id_toko: string,
     @Query('kategori') kategori?: string,
   ): Promise<Produk[]> {
-    return await this.produkService.getProdukByHarga(sort, kategori);
+    return this.produkService.getProdukByHarga(sort, id_toko, kategori);
   }
 
   @Get('by-stok')
@@ -195,7 +185,10 @@ export class ProdukController {
     @Query('id_toko') id_toko: string,
   ): Promise<Produk[]> {
     try {
-      const products = await this.produkService.searchProduk(nama_produk, id_toko);
+      const products = await this.produkService.searchProduk(
+        nama_produk,
+        id_toko,
+      );
       return products;
     } catch (error) {
       console.error('Error searching for products:', error);

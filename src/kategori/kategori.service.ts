@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { CreateKategoriDto } from './dto/create-kategori.dto';
 import { UpdateKategoriDto } from './dto/update-kategori.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,7 +7,6 @@ import { Kategori } from './entities/kategori.entity';
 import { Produk } from 'src/produk/entities/produk.entity';
 import { Toko } from 'src/toko/entities/toko.entity';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
-
 
 @Injectable()
 export class KategoriService {
@@ -40,24 +35,31 @@ export class KategoriService {
     kategori.toko = toko; // Assign toko
 
     const result = await this.kategoriRepository.insert(kategori);
-    
+
     return this.kategoriRepository.findOneOrFail({
       where: {
         id_kategori: result.identifiers[0].id,
       },
     });
   }
-  
 
-  async filterProdukByKategori(idKategori: string): Promise<Produk[]> {
+  async filterProdukByKategori(
+    idKategori: string,
+    idToko: string,
+  ): Promise<Produk[]> {
     try {
       const produk = await this.produkRepository.find({
-        where: { kategori: { id_kategori: idKategori } },
+        where: {
+          kategori: { id_kategori: idKategori }, // Filter berdasarkan kategori
+          toko: { id_toko: idToko }, // Tambahkan filter berdasarkan id_toko
+        },
       });
-
+  
       return produk.length ? produk : []; // Mengembalikan array kosong jika tidak ada produk
     } catch (error) {
-      throw new Error(`Gagal memfilter produk berdasarkan kategori: ${error.message}`);
+      throw new Error(
+        `Gagal memfilter produk berdasarkan kategori dan toko: ${error.message}`,
+      );
     }
   }
 
@@ -66,7 +68,7 @@ export class KategoriService {
       const kategoriList = await this.kategoriRepository.find({
         where: { toko: { id_toko: id_toko } }, // Pastikan ini sesuai dengan skema database
       });
-      
+
       const produkCountPerKategori = await Promise.all(
         kategoriList.map(async (kategori) => {
           const produkCount = await this.produkRepository.count({
@@ -92,11 +94,17 @@ export class KategoriService {
       });
       return kategoriList;
     } catch (error) {
-      throw new HttpException(`Gagal mengambil kategori: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        `Gagal mengambil kategori: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
-  async findProdukByKategoriAndToko(kategoriId: string, id_toko: string): Promise<Produk[]> {
+  async findProdukByKategoriAndToko(
+    kategoriId: string,
+    id_toko: string,
+  ): Promise<Produk[]> {
     try {
       const kategori = await this.kategoriRepository.findOne({
         where: { id_kategori: kategoriId, toko: { id_toko: id_toko } },
@@ -104,12 +112,18 @@ export class KategoriService {
       });
 
       if (!kategori) {
-        throw new HttpException('Kategori tidak ditemukan untuk toko ini', HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          'Kategori tidak ditemukan untuk toko ini',
+          HttpStatus.NOT_FOUND,
+        );
       }
 
       return kategori.produk; // Mengembalikan produk yang terkait
     } catch (error) {
-      throw new HttpException(`Gagal mengambil produk: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        `Gagal mengambil produk: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -134,7 +148,10 @@ export class KategoriService {
 
       return produkCountPerKategori;
     } catch (error) {
-      throw new HttpException(`Gagal menghitung produk per kategori: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        `Gagal menghitung produk per kategori: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -143,14 +160,20 @@ export class KategoriService {
       const kategori = await this.kategoriRepository.findOne({
         where: { id_kategori, toko: { id_toko: id_toko } },
       });
-  
+
       if (!kategori) {
-        throw new HttpException('Kategori tidak ditemukan untuk toko ini', HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          'Kategori tidak ditemukan untuk toko ini',
+          HttpStatus.NOT_FOUND,
+        );
       }
-  
+
       await this.kategoriRepository.delete({ id_kategori });
     } catch (error) {
-      throw new HttpException(`Gagal menghapus kategori: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        `Gagal menghapus kategori: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -165,16 +188,22 @@ export class KategoriService {
       });
     } catch (e) {
       if (e instanceof EntityNotFoundError) {
-        throw new HttpException({
-          statusCode: HttpStatus.NOT_FOUND,
-          error: 'Data tidak ditemukan',
-        }, HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            error: 'Data tidak ditemukan',
+          },
+          HttpStatus.NOT_FOUND,
+        );
       }
       throw e;
     }
   }
 
-  async updateKategori(namaLama: string, updateKategoriDto: UpdateKategoriDto): Promise<void> {
+  async updateKategori(
+    namaLama: string,
+    updateKategoriDto: UpdateKategoriDto,
+  ): Promise<void> {
     const { namaBaru } = updateKategoriDto;
 
     try {
@@ -194,13 +223,15 @@ export class KategoriService {
         where: { kategori: { id_kategori: kategori.id_kategori } },
       });
 
-      await Promise.all(produkTerkait.map((produk) => {
-        if (produk.kategori) {
-          produk.kategori.nama = namaBaru;
-          return this.produkRepository.save(produk);
-        }
-        return Promise.resolve();
-      }));
+      await Promise.all(
+        produkTerkait.map((produk) => {
+          if (produk.kategori) {
+            produk.kategori.nama = namaBaru;
+            return this.produkRepository.save(produk);
+          }
+          return Promise.resolve();
+        }),
+      );
     } catch (error) {
       throw new Error(`Gagal memperbarui kategori: ${error.message}`);
     }
@@ -218,10 +249,13 @@ export class KategoriService {
       await this.kategoriRepository.delete(id);
     } catch (e) {
       if (e instanceof EntityNotFoundError) {
-        throw new HttpException({
-          statusCode: HttpStatus.NOT_FOUND,
-          error: 'Data tidak ditemukan',
-        }, HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            error: 'Data tidak ditemukan',
+          },
+          HttpStatus.NOT_FOUND,
+        );
       }
       throw e;
     }
