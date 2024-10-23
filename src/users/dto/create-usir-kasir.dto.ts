@@ -10,5 +10,6 @@ export class CreateUserKasirDto {
 
   @IsNotEmpty()
   status: StatusUser;
+  id_toko: string; // Tambahkan id_toko
 
 }

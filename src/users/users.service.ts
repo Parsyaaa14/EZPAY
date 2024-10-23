@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { CreateSuperadminDto } from './dto/create-superadmin.dto';
-import { EditUserDto} from './dto/update-user.dto';
+import { EditUserDto } from './dto/update-user.dto';
 import { EntityNotFoundError, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -26,43 +26,43 @@ export class UsersService {
     private usersRepository: Repository<User>,
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
-    ) {}
-    private ubahSalt(): string {
-      return bcrypt.genSaltSync();
+  ) {}
+  private ubahSalt(): string {
+    return bcrypt.genSaltSync();
+  }
+
+  private hashPassword(password: string, salt: string): string {
+    return bcrypt.hashSync(password, salt); // Hash password with the generated salt
+  }
+
+  private generateSalt(): string {
+    return crypto.randomBytes(16).toString('hex');
+  }
+
+  async tambahKasir(
+    createUserKasirDto: CreateUserKasirDto,
+    idToko: string,
+  ): Promise<User> {
+    const password = '123456'; // Default password
+
+    const role = await this.roleRepository.findOne({
+      where: { nama: 'Kasir' },
+    });
+
+    if (!role) {
+      throw new Error('Role Kasir not found');
     }
-    
-    private hashPassword(password: string, salt: string): string {
-      return bcrypt.hashSync(password, salt); // Hash password with the generated salt
-    }    
-    
-    private generateSalt(): string {
-      return crypto.randomBytes(16).toString('hex');
-    }
-  
-    async tambahKasir(createUserKasirDto: CreateUserKasirDto): Promise<User> {
-      // Default password
-      const password = '123456'; // Keep default password as plaintext
-        
-      // Get the 'Kasir' role
-      const role = await this.roleRepository.findOne({
-        where: { nama: 'Kasir' },
-      });
-    
-      if (!role) {
-        throw new Error('Role Kasir not found');
-      }
-    
-      // Create a new user using the DTO
-      const user = this.usersRepository.create({
-        ...createUserKasirDto,
-        password, // Save the default password as plaintext
-        salt: '',  // No salt needed for plaintext password
-        role,     // Assign the Kasir role
-      });
-    
-      return this.usersRepository.save(user);
-    }
-    
+
+    const user = this.usersRepository.create({
+      ...createUserKasirDto,
+      password, // Simpan password default
+      salt: '', // Tidak perlu salt untuk password plaintext
+      role, // Assign role Kasir
+      toko: { id_toko: idToko }, // Assign toko berdasarkan id_toko yang diterima
+    });
+
+    return this.usersRepository.save(user);
+  }
 
   async tambahAdmin(createUserDto: CreateUserDto): Promise<User> {
     // Default password
@@ -82,49 +82,53 @@ export class UsersService {
     const user = this.usersRepository.create({
       ...createUserDto,
       password, // Save the default password
-      salt,     // Save the generated salt
-      role,     // Assign the Admin role
+      salt, // Save the generated salt
+      role, // Assign the Admin role
     });
 
     return this.usersRepository.save(user);
   }
 
-  async tambahSuperadmin(CreateSuperadminDto: CreateSuperadminDto): Promise<User> {
+  async tambahSuperadmin(
+    CreateSuperadminDto: CreateSuperadminDto,
+  ): Promise<User> {
     if (!CreateSuperadminDto.password) {
       throw new Error('Password is required');
     }
-  
+
     const salt = this.ubahSalt();
-    const hashedPassword = this.hashPassword(CreateSuperadminDto.password, salt);
-  
+    const hashedPassword = this.hashPassword(
+      CreateSuperadminDto.password,
+      salt,
+    );
+
     // Check if email already exists
     const existingUser = await this.usersRepository.findOne({
       where: { email: CreateSuperadminDto.email },
     });
-  
+
     if (existingUser) {
       throw new Error('Email already exists');
     }
-  
+
     const role = await this.roleRepository.findOne({
       where: { nama: 'SuperAdmin' },
     });
-  
+
     if (!role) {
       throw new Error('Role SuperAdmin not found');
     }
-  
+
     const user = this.usersRepository.create({
       ...CreateSuperadminDto,
       password: hashedPassword,
       salt,
       role,
     });
-  
+
     return this.usersRepository.save(user);
   }
-  
-  
+
   async editKasir(id: string, editKasirDto: EditKasirDto): Promise<User> {
     const { nama, email, status, password } = editKasirDto;
 
@@ -161,8 +165,10 @@ export class UsersService {
     });
   }
 
-
-  async editPassword(id: string, editPasswordDto: EditPasswordDto): Promise<User> {
+  async editPassword(
+    id: string,
+    editPasswordDto: EditPasswordDto,
+  ): Promise<User> {
     const { email, password } = editPasswordDto;
 
     // Cari user berdasarkan id
@@ -188,7 +194,7 @@ export class UsersService {
   }
 
   async editAdmin(id: string, editUserDto: EditUserDto): Promise<User> {
-    const { nama, email,no_handphone, status, password } = editUserDto;
+    const { nama, email, no_handphone, status, password } = editUserDto;
 
     // Cari user berdasarkan id
     const user = await this.usersRepository.findOne({ where: { id_user: id } });
@@ -215,7 +221,6 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  
   // async findById(id: string): Promise<User | undefined> {
   //   return this.usersRepository.findOne({ where: { id_user: id } });
   // }
@@ -229,7 +234,7 @@ export class UsersService {
       },
     });
   }
-  
+
   async findByEmail(email: string): Promise<User | undefined> {
     return this.usersRepository.findOne({ where: { email } });
   }
@@ -237,22 +242,24 @@ export class UsersService {
     return this.usersRepository.findAndCount();
   }
 
-
-  async findAllKasir(): Promise<User[]> {
+  async findAllKasir(id_toko: string): Promise<User[]> {
     // Mencari role "kasir"
     const kasirRole = await this.roleRepository.findOne({
       where: { nama: 'Kasir' }, // Ganti dengan field yang sesuai jika nama_role berbeda
     });
-  
+
     if (!kasirRole) {
       throw new Error('Role kasir tidak ditemukan');
     }
-  
-    // Mencari semua pengguna dengan role "kasir"
+
+    // Mencari semua pengguna dengan role "kasir" dan id_toko
     return this.usersRepository.find({
       where: {
         role: {
           id_role: kasirRole.id_role,
+        },
+        toko: {
+          id_toko: id_toko, // Filter berdasarkan id_toko
         },
       },
     });

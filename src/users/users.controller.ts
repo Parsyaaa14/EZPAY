@@ -11,6 +11,7 @@ import {
   HttpStatus,
   NotFoundException,
   HttpException,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -38,8 +39,9 @@ export class UsersController {
   @Post('tambah-kasir')
   async tambahKasir(
     @Body() createUserKasirDto: CreateUserKasirDto,
+    @Query('id_toko') idToko: string, // Pastikan ini menggunakan idToko
   ): Promise<User> {
-    return this.usersService.tambahKasir(createUserKasirDto);
+    return this.usersService.tambahKasir(createUserKasirDto, idToko);
   }
 
   @Post('tambah-admin')
@@ -47,23 +49,11 @@ export class UsersController {
     return this.usersService.tambahAdmin(createUserDto);
   }
 
-  @Post()
-  async create(@Body() createUserDto: CreateUserDto) {
-    return {
-      data: await this.usersService.create(createUserDto),
-      statusCode: HttpStatus.CREATED,
-      message: 'success',
-    };
-  }
-
   @Post('tambah-superadmin')
-  async tambahSuperadmin(@Body() CreateSuperadminDto: CreateSuperadminDto): Promise<User> {
+  async tambahSuperadmin(
+    @Body() CreateSuperadminDto: CreateSuperadminDto,
+  ): Promise<User> {
     return this.usersService.tambahSuperadmin(CreateSuperadminDto);
-  }
-
-  @Get('kasir')
-  async getKasirUsers(): Promise<User[]> {
-    return await this.usersService.getKasirUsers();
   }
 
   @Get()
@@ -79,11 +69,15 @@ export class UsersController {
   }
 
   @Get('kasir')
-  async getAllKasir() {
+  async getAllKasir(@Query('id_toko') id_toko: string) {
     try {
-      const kasirUsers = await this.usersService.findAllKasir();
+      if (!id_toko) {
+        throw new HttpException('id_toko is required', HttpStatus.BAD_REQUEST);
+      }
+
+      const kasirUsers = await this.usersService.findAllKasir(id_toko);
       return {
-        data: kasirUsers.map(user => ({
+        data: kasirUsers.map((user) => ({
           id_kasir: user.id_user, // Sesuaikan dengan atribut Anda
           nama_kasir: user.nama,
           email_kasir: user.email,
@@ -93,7 +87,7 @@ export class UsersController {
     } catch (error) {
       throw new HttpException(
         `Error fetching kasir users: ${error.message}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
