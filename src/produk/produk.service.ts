@@ -270,9 +270,12 @@ export class ProdukService {
     return await this.produkRepository
       .createQueryBuilder('produk')
       .leftJoinAndSelect('produk.toko', 'toko')
-      .where('toko.id_toko = :id_toko', { id_toko })
+      .leftJoinAndSelect('produk.kategori', 'kategori') // Menyertakan kategori sebagai objek
+      .where('toko.id_toko = :id_toko', { id_toko }) // Hanya kondisi untuk toko
       .getMany();
   }
+  
+  
 
   async filterProdukMinStok(id_toko: string): Promise<Produk[]> {
     // Query untuk mendapatkan produk dengan stok lebih dari 0, diurutkan dari stok terkecil

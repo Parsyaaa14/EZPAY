@@ -76,13 +76,6 @@ export class ProdukController {
       );
     }
   }
-  // @Get()
-  // async getProdukByStatus(
-  //   @Query('status') status: string, // Parameter status
-  //   @Query('id_toko') idToko: string, // Parameter id_toko
-  // ): Promise<Produk[]> {
-  //   return this.produkService.getProdukByStatus(status, idToko);
-  // }
 
   @Get('by-kategori')
   async filterProdukByKategori(
@@ -92,12 +85,11 @@ export class ProdukController {
     return this.produkService.filterProdukByKategori(idKategori, idToko);
   }
 
-  // @Public()
   @Get('/toko/:id_toko')
   async getProductsByToko(@Param('id_toko') id_toko: string) {
     try {
       const products = await this.produkService.findProductsByToko(id_toko);
-      return products;
+      return products; // Mengembalikan produk dengan kategori sebagai objek
     } catch (error) {
       console.error('Error fetching products for toko:', error);
       throw new InternalServerErrorException(
@@ -105,6 +97,7 @@ export class ProdukController {
       );
     }
   }
+  
 
   // @Public()
   @Get('/filter-min-stok/toko/:id_toko')
