@@ -50,6 +50,7 @@ export class AuthController {
       access_token: result.access_token,
       id_user: result.user.id_user, // Tambahkan id_user
       id_toko: result.id_toko, // Tambahkan id_toko
+      email: result.user.email,
     };
   }
   
