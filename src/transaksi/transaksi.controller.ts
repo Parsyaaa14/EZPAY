@@ -8,6 +8,8 @@ import {
   Delete,
   BadRequestException,
   Query,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { TransaksiService } from './transaksi.service';
 import { CreateTransaksiDto } from './dto/create-transaksi.dto';
@@ -35,7 +37,7 @@ export class TransaksiController {
     @Query('startDate') startDate: string = '2000-01-01', // Default ke awal tahun 2000
     @Query('endDate') endDate: string = new Date().toISOString().split('T')[0], // Default ke tanggal hari ini
     @Query('page') page: number = 1, // Default halaman pertama
-    @Query('limit') limit: number = 10 // Default 10 item per halaman
+    @Query('limit') limit: number = 10, // Default 10 item per halaman
   ): Promise<{
     data: {
       id_transaksi: string; // ID transaksi
@@ -59,81 +61,54 @@ export class TransaksiController {
     page: number; // Halaman saat ini
     limit: number; // Jumlah item per halaman
   }> {
-    return this.transaksiService.getAllTransaksi(startDate, endDate, page, limit);
+    return this.transaksiService.getAllTransaksi(
+      startDate,
+      endDate,
+      page,
+      limit,
+    );
   }
 
   @Get('count')
-  async getAllTransaksiCount(): Promise<{ jumlahTransaksi: number }> {
-    const jumlahTransaksi = await this.transaksiService.getAllTransaksiCount();
-    return { jumlahTransaksi };
+  async getTransaksiCountByToko(@Query('id_toko') id_toko: string) {
+    try {
+      if (!id_toko) {
+        throw new HttpException('id_toko is required', HttpStatus.BAD_REQUEST);
+      }
+
+      const jumlahTransaksi = await this.transaksiService.countTransaksiByToko(
+        id_toko,
+      );
+      return {
+        jumlahTransaksi,
+      };
+    } catch (error) {
+      throw new HttpException(
+        `Error fetching transaksi count: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Get('total-harga')
   async getTotalHarga(
     @Query() filterDto: GetTransaksiFilterDto,
   ): Promise<number> {
-    return this.transaksiService.getTotalHarga(filterDto);
+    try {
+      return await this.transaksiService.getTotalHarga(filterDto);
+    } catch (error) {
+      throw new HttpException(
+        `Error fetching total harga: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Get('monthly-sales') // Menentukan method GET
-  async getMonthlySales() {
-    return this.transaksiService.getMonthlySales();
+  async getMonthlySales(@Query('id_toko') idToko: string) {
+    if (!idToko) {
+      throw new HttpException('id_toko is required', HttpStatus.BAD_REQUEST);
+    }
+    return this.transaksiService.getMonthlySales(idToko);
   }
-
-  // @Get('all')
-  // async getAllTransaksiLong() {
-  //   return this.transaksiService.getAllTransaksiLong();
-  // }
-  // @Get('all2')
-  // async getAllTransaksiVeryLong() {
-  //   return this.transaksiService.getAllTransaksiVeryLong();
-  // }
-
-  // @Post('bayar')
-  // async bayar(@Body() body: {
-  //   pesananId: string;
-  //   metodeTransaksiId: string;
-  // }): Promise<Transaksi> {
-  //   try {
-  //     const { pesananId, metodeTransaksiId } = body;
-  //     return await this.transaksiService.bayar(pesananId, metodeTransaksiId);
-  //   } catch (error) {
-  //     throw new BadRequestException(error.message);
-  //   }
-  // }
-
-  // @Post('bayar')
-  // async bayar(@Body() bayarDto: BayarDto): Promise<Transaksi> {
-  //   return this.transaksiService.bayar(bayarDto);
-  // }
-
-  //   @Post('bayar')
-  // async bayar(@Body() bayarDto: BayarDto) {
-  //   return this.transaksiService.bayar(bayarDto);
-  // }
-
-  // @Post()
-  // create(@Body() createTransaksiDto: CreateTransaksiDto) {
-  //   return this.transaksiService.create(createTransaksiDto);
-  // }
-
-  // @Get()
-  // findAll() {
-  //   return this.transaksiService.findAll();
-  // }
-
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.transaksiService.findOne(+id);
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateTransaksiDto: UpdateTransaksiDto) {
-  //   return this.transaksiService.update(+id, updateTransaksiDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.transaksiService.remove(+id);
-  // }
 }
