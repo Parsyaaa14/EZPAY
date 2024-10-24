@@ -25,7 +25,7 @@ export class ProdukService {
     private readonly usersRepository: Repository<User>,
   ) {}
 
-  async createProduk(createProdukDto: CreateProdukDto): Promise<Produk> {
+  async createProduk(createProdukDto: CreateProdukDto, idToko: string): Promise<Produk> {
     let kategori: Kategori;
 
     // Cari kategori berdasarkan id_kategori
@@ -45,6 +45,7 @@ export class ProdukService {
     const newProduk = this.produkRepository.create({
       ...createProdukDto,
       kategori,
+      toko: { id_toko: idToko }, // Menambahkan id_toko di sini
     });
 
     // Simpan produk dan tangani error jika ada

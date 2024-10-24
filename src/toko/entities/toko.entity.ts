@@ -27,8 +27,8 @@ export class Toko {
   @PrimaryGeneratedColumn('uuid')
   id_toko: string;
 
-  @OneToMany(() => Produk, (produk) => produk.toko)
-  produk?: Produk[];
+  @OneToMany(() => Produk, produk => produk.toko) // Pastikan relasi ini ada
+  produk: Produk[];
 
   @OneToMany(() => Kategori, (kategori) => kategori.toko)
   kategori?: Kategori[];

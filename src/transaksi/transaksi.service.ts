@@ -33,6 +33,7 @@ export class TransaksiService {
   }
 
   async getAllTransaksi(
+    id_toko: string, // Menambahkan id_toko sebagai parameter
     startDate?: string,
     endDate?: string,
     page: number = 1,
@@ -45,6 +46,7 @@ export class TransaksiService {
       .leftJoinAndSelect('transaksi.metodeTransaksi', 'metodeTransaksi')
       .leftJoinAndSelect('transaksi.user', 'user')
       .leftJoinAndSelect('detilProdukPesanan.produk', 'produk')
+      .where('transaksi.id_toko = :id_toko', { id_toko }) // Filter berdasarkan id_toko
       .orderBy('transaksi.createdAt', 'DESC');
   
     // Menambahkan filter berdasarkan tanggal

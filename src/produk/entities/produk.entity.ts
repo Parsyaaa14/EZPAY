@@ -36,8 +36,8 @@ export class Produk {
   @ManyToOne(() => User, (user) => user.produk)
   user?: User;
 
-  @ManyToOne(() => Toko, (toko) => toko.produk)
-  toko: Toko[];
+  @ManyToOne(() => Toko, toko => toko.produk) // Pastikan ini ada
+  toko: Toko; // Ini adalah relasi dengan entitas Toko
 
   @OneToMany(() => DetilProdukPesanan, (detilProdukPesanan) => detilProdukPesanan.produk)
   detilProdukPesanan: DetilProdukPesanan[];

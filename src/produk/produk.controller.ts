@@ -36,7 +36,7 @@ export class ProdukController {
   produkRepository: any;
   constructor(private readonly produkService: ProdukService) {}
 
-  @Post()
+  @Post('tambah-produk') // Endpoint untuk menambah produk
   @UseInterceptors(
     FileInterceptor('gambar_produk', {
       storage: diskStorage({
@@ -62,14 +62,15 @@ export class ProdukController {
     }),
   )
   async createProduk(
+    @Query('id_toko') idToko: string, // Ambil id_toko dari query
     @Body() createProdukDto: CreateProdukDto,
     @UploadedFile() file: Express.Multer.File,
-  ) {
+  ): Promise<Produk> {
     try {
       if (file) {
         createProdukDto.gambar_produk = file.filename; // Simpan nama file di DTO
       }
-      return await this.produkService.createProduk(createProdukDto);
+      return await this.produkService.createProduk(createProdukDto, idToko); // Memanggil service dengan dua argumen
     } catch (error) {
       throw new InternalServerErrorException(
         `Error membuat produk: ${error.message}`,
