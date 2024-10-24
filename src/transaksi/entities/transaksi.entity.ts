@@ -15,6 +15,8 @@ import {
 import { User } from '../../users/entities/user.entity';
 import { Pesanan } from '../../pesanan/entities/pesanan.entity';
 import { MetodeTransaksi } from '../../metode_transaksi/entities/metode_transaksi.entity';
+import { Toko } from '../../toko/entities/toko.entity'
+
 
 @Entity()
 export class Transaksi {
@@ -27,6 +29,10 @@ export class Transaksi {
   @OneToOne(() => Pesanan, (pesanan) => pesanan.transaksi, { eager: true })
   @JoinColumn()
   pesanan: Pesanan;
+
+  @ManyToOne(() => Toko, (toko) => toko.transaksi)
+  @JoinColumn({ name: 'id_toko' })
+  toko: Toko;
 
   @ManyToMany(() => MetodeTransaksi, (metodeTransaksi) => metodeTransaksi.transaksi)
   @JoinTable({ name: 'transaksi_metode' }) // Menentukan tabel junction untuk relasi Many-to-Many

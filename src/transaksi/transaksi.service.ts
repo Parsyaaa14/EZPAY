@@ -105,57 +105,132 @@ export class TransaksiService {
     return regex.test(dateString) && !isNaN(new Date(dateString).getTime());
   }
 
-  async getAllTransaksiCount(): Promise<number> {
-    // Menghitung jumlah produk yang ada di database
-    const count = await this.transaksiRepository.count();
-    return count;
+  async countTransaksiByToko(id_toko: string): Promise<number> {
+    // Menghitung jumlah transaksi berdasarkan id_toko
+    return this.transaksiRepository.count({
+      where: {
+        toko: {
+          id_toko: id_toko, // Filter transaksi berdasarkan id_toko
+        },
+      },
+    });
   }
+  
 
-  async getMonthlySales(): Promise<{ month: string; total: number }[]> {
+  async getMonthlySales(idToko: string): Promise<{ month: string; total: number }[]> {
     const query = this.transaksiRepository.createQueryBuilder('transaksi')
-      .select(`TO_CHAR(transaksi.created_at, 'YYYY-MM')`, 'month')
-      .addSelect('SUM(transaksi.total_harga)', 'total')
+      .select(`TO_CHAR(transaksi.createdAt, 'YYYY-MM')`, 'month') // Perhatikan penggunaan `createdAt` sesuai dengan nama kolom Anda
+      .addSelect('SUM(transaksi.totalHarga)', 'total')
+      .where('transaksi.id_toko = :idToko', { idToko })
       .groupBy('month')
       .orderBy('month', 'ASC');
-  
+
     return await query.getRawMany();
   }
   
 
   async getTotalHarga(filterDto: GetTransaksiFilterDto): Promise<number> {
-    const { period } = filterDto;
+    const { period, id_toko } = filterDto; // Ambil id_toko dari filterDto
 
     const query = this.transaksiRepository.createQueryBuilder('transaksi');
 
-    if (period) {
-      const startDate = this.getStartDate(period);
-      query.where('transaksi.created_at >= :startDate', { startDate });
+    // Filter berdasarkan id_toko
+    if (id_toko) {
+      query.andWhere('transaksi.toko.id_toko = :id_toko', { id_toko });
+    } else {
+      throw new Error('id_toko is required');
+    }
+
+    // Menentukan rentang waktu berdasarkan period
+    const now = new Date();
+    switch (period) {
+      case 'today':
+        query.andWhere('transaksi.createdAt >= :startDate AND transaksi.createdAt <= :endDate', {
+          startDate: new Date(now.setHours(0, 0, 0, 0)),
+          endDate: new Date(now.setHours(23, 59, 59, 999)),
+        });
+        break;
+      case 'yesterday':
+        now.setDate(now.getDate() - 1);
+        query.andWhere('transaksi.createdAt >= :startDate AND transaksi.createdAt <= :endDate', {
+          startDate: new Date(now.setHours(0, 0, 0, 0)),
+          endDate: new Date(now.setHours(23, 59, 59, 999)),
+        });
+        break;
+      case 'this_week':
+        const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + 1)); // Senin
+        const endOfWeek = new Date(now.setDate(startOfWeek.getDate() + 6)); // Minggu
+        query.andWhere('transaksi.createdAt >= :startDate AND transaksi.createdAt <= :endDate', {
+          startDate: new Date(startOfWeek.setHours(0, 0, 0, 0)),
+          endDate: new Date(endOfWeek.setHours(23, 59, 59, 999)),
+        });
+        break;
+      case 'last_week':
+        now.setDate(now.getDate() - 7);
+        const lastWeekStart = new Date(now.setDate(now.getDate() - now.getDay() + 1)); // Senin minggu lalu
+        const lastWeekEnd = new Date(now.setDate(lastWeekStart.getDate() + 6)); // Minggu lalu
+        query.andWhere('transaksi.createdAt >= :startDate AND transaksi.createdAt <= :endDate', {
+          startDate: new Date(lastWeekStart.setHours(0, 0, 0, 0)),
+          endDate: new Date(lastWeekEnd.setHours(23, 59, 59, 999)),
+        });
+        break;
+      case 'this_month':
+        query.andWhere('transaksi.createdAt >= :startDate AND transaksi.createdAt <= :endDate', {
+          startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+          endDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0, 23, 59, 59, 999),
+        });
+        break;
+      case 'last_month':
+        const lastMonth = new Date();
+        lastMonth.setMonth(lastMonth.getMonth() - 1);
+        query.andWhere('transaksi.createdAt >= :startDate AND transaksi.createdAt <= :endDate', {
+          startDate: new Date(lastMonth.getFullYear(), lastMonth.getMonth(), 1),
+          endDate: new Date(lastMonth.getFullYear(), lastMonth.getMonth() + 1, 0, 23, 59, 59, 999),
+        });
+        break;
+      case 'last_30_days':
+        query.andWhere('transaksi.createdAt >= :startDate AND transaksi.createdAt <= :endDate', {
+          startDate: new Date(now.setDate(now.getDate() - 30)),
+          endDate: new Date(),
+        });
+        break;
+      case 'this_quarter':
+        const quarterStart = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1);
+        const quarterEnd = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3 + 3, 0, 23, 59, 59, 999);
+        query.andWhere('transaksi.createdAt >= :startDate AND transaksi.createdAt <= :endDate', {
+          startDate: quarterStart,
+          endDate: quarterEnd,
+        });
+        break;
+      case 'last_quarter':
+        const lastQuarterStart = new Date(now.getFullYear(), Math.floor((now.getMonth() - 3) / 3) * 3, 1);
+        const lastQuarterEnd = new Date(now.getFullYear(), Math.floor((now.getMonth() - 3) / 3) * 3 + 3, 0, 23, 59, 59, 999);
+        query.andWhere('transaksi.createdAt >= :startDate AND transaksi.createdAt <= :endDate', {
+          startDate: lastQuarterStart,
+          endDate: lastQuarterEnd,
+        });
+        break;
+      case 'this_year':
+        query.andWhere('transaksi.createdAt >= :startDate AND transaksi.createdAt <= :endDate', {
+          startDate: new Date(now.getFullYear(), 0, 1),
+          endDate: new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999),
+        });
+        break;
+      case 'last_year':
+        query.andWhere('transaksi.createdAt >= :startDate AND transaksi.createdAt <= :endDate', {
+          startDate: new Date(now.getFullYear() - 1, 0, 1),
+          endDate: new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59, 999),
+        });
+        break;
+      default:
+        throw new Error('Invalid period specified');
     }
 
     const totalHarga = await query
-      .select('SUM(transaksi.total_harga)', 'total')
+      .select('SUM(transaksi.totalHarga)', 'total')
       .getRawOne();
 
     return totalHarga.total || 0;
-  }
-
-  private getStartDate(period: string): Date {
-    const date = new Date();
-    switch (period) {
-      case 'day':
-        date.setDate(date.getDate() - 1);
-        break;
-      case 'week':
-        date.setDate(date.getDate() - 7);
-        break;
-      case 'month':
-        date.setMonth(date.getMonth() - 1);
-        break;
-      case 'year':
-        date.setFullYear(date.getFullYear() - 1);
-        break;
-    }
-    return date;
   }
 
   // async bayar(pesananId: string, metodeTransaksiId: string): Promise<Transaksi> {
