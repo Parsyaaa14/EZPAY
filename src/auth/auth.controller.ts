@@ -3,6 +3,7 @@ import { Controller, Post, Body, Res, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ValidateTokoDto } from './dto/validate-toko.dto';
 import { TokoService } from 'src/toko/toko.service';
+import { LoginDto } from './dto/login.dto';
 
 @Controller('auth') // Perhatikan bahwa ini mendefinisikan prefix 'auth'
 export class AuthController {
@@ -12,9 +13,16 @@ export class AuthController {
   ) {}
 
   @Post('login/kasir')
-  async loginForKasir(@Body() body: { email: string; password: string }) {
-    const { email, password } = body;
-    return this.authService.loginForKasir(email, password);
+  async loginForKasir(@Body() loginKasir: LoginDto) {
+    const { email, password } = loginKasir;
+    const result = await this.authService.loginForKasir(email, password);
+    return {
+      access_token: result.access_token,
+      id_user: result.id_user, // Tambahkan id_user
+      nama: result.nama,
+      id_toko: result.id_toko, // Tambahkan id_toko
+      email: result.email,
+    };
   }
 
   // @Post('login/')
@@ -49,6 +57,7 @@ export class AuthController {
       message: result.message,
       access_token: result.access_token,
       id_user: result.user.id_user, // Tambahkan id_user
+      nama: result.user.nama,
       id_toko: result.id_toko, // Tambahkan id_toko
       email: result.user.email,
     };

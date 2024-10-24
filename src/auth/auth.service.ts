@@ -29,7 +29,7 @@ export class AuthService {
   async loginForKasir(
     email: string,
     password: string,
-  ): Promise<{ access_token?: string; redirectUrl?: string; id_user?: string; nama?: string; }> {
+  ): Promise<{ access_token?: string; redirectUrl?: string; id_user?: string; nama?: string; id_toko?: string, email?: string }> {
     const user = await this.usersRepository.findOne({
       where: { email },
       relations: ['role'],
@@ -74,12 +74,18 @@ export class AuthService {
       iat: Math.floor(Date.now() / 1000),
     };
   
+    // Cari toko yang terkait dengan user tersebut
+    const toko = await this.tokoRepository.findOne({
+    where: { user: { id_user: user.id_user } },
+      });
     const access_token = this.jwtService.sign(payload, { expiresIn: '1h' });
   
     return {
       access_token,
       id_user: user.id_user, // Mengembalikan id_user
       nama: user.nama, // Mengembalikan nama
+      id_toko: toko.id_toko,// Mengembalikan id_toko
+      email: user.email,
     };
   }
   
@@ -145,7 +151,7 @@ export class AuthService {
     return {
       message: 'Login berhasil',
       access_token,
-      user: { id_user: user.id_user, email: user.email },
+      user: { id_user: user.id_user, email: user.email, nama: user.nama },
       id_toko: toko.id_toko, // Kembalikan id_toko
     };
   }
