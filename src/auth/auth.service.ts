@@ -42,7 +42,7 @@ export class AuthService {
     // 1. Cek apakah password default digunakan
     if (password === '123456') {
       return {
-        redirectUrl: `/edit_password_kasir?id=${user.id_user}`,
+        redirectUrl: '/edit_password_kasir?id=${user.id_user}',
       };
     }
   
@@ -145,7 +145,7 @@ export class AuthService {
     };
     const access_token = this.jwtService.sign(payload);
   
-    console.log(`Toko ${toko.nama_toko} berhasil login dengan status ${toko.status}`);
+    console.log('Toko ${toko.nama_toko} berhasil login dengan status ${toko.status}');
   
     // Kembalikan hasil login termasuk user dan id_toko
     return {
@@ -209,7 +209,7 @@ export class AuthService {
   //   cookies.set('id_user', user.id_user.toString(), { httpOnly: true });
   //   // Logging
   //   if (access_token) {
-  //     console.log(`Toko ${toko.nama_toko} berhasil login dengan status ${toko.status}`);
+  //     console.log(Toko ${toko.nama_toko} berhasil login dengan status ${toko.status});
   //   }
 
   //   return { message: 'Login berhasil', access_token };
@@ -248,7 +248,7 @@ export class AuthService {
 
     // Pengecekan tambahan jika diperlukan
     if (access_token) {
-      console.log(`User ${user.email} berhasil login dengan role Superadmin.`);
+      console.log('User ${user.email} berhasil login dengan role Superadmin.');
     }
 
     return { access_token };
