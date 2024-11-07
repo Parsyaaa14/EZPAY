@@ -28,6 +28,11 @@ export class TransaksiController {
   }
 
   @Get('user/:id_user')
+  async getTransaksiByUser(@Param('id_user') id_user: string) {
+    return this.transaksiService.getTransaksiByUser(id_user);
+  }
+
+  @Get('user/:id_user')
   async getTransaksiByUserId(@Param('id_user') id_user: string) {
     return this.transaksiService.findByUserId(id_user);
   }
