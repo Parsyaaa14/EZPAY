@@ -29,30 +29,37 @@ export class AuthService {
   async loginForKasir(
     email: string,
     password: string,
-  ): Promise<{ access_token?: string; redirectUrl?: string; id_user?: string; nama?: string; id_toko?: string, email?: string }> {
+  ): Promise<{ access_token?: string; id_user?: string; nama?: string; id_toko?: string; email?: string }> {
     const user = await this.usersRepository.findOne({
       where: { email },
-      relations: ['role'],
+      relations: ['role', 'toko'],  // Pastikan relasi toko dimuat
     });
   
     if (!user) {
       throw new UnauthorizedException('Email tidak ditemukan');
     }
   
-    // 1. Cek apakah password default digunakan
+    // Cek apakah password default digunakan
     if (password === '123456') {
+      // Password default, hanya kirimkan data user tanpa token
+      if (!user.toko) {
+        throw new UnauthorizedException('Toko tidak ditemukan untuk pengguna ini');
+      }
       return {
-        redirectUrl: '/edit_password_kasir?id=${user.id_user}',
+        id_user: user.id_user,
+        nama: user.nama,
+        email: user.email,
+        id_toko: user.toko.id_toko,  // Toko terkait dengan user
       };
     }
   
-    // 2. Cek apakah password yang diinput cocok dengan hash di database
+    // Cek apakah password yang diinput cocok dengan hash di database
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       throw new UnauthorizedException('Password salah');
     }
   
-    // 3. Validasi peran dan status akun
+    // Validasi peran dan status akun
     if (user.role.nama !== 'Kasir') {
       throw new UnauthorizedException('Akses ditolak: Anda bukan kasir');
     }
@@ -64,7 +71,7 @@ export class AuthService {
       });
     }
   
-    // 4. Simpan waktu login terakhir dan buat token JWT
+    // Simpan waktu login terakhir dan buat token JWT
     user.lastLogin = new Date();
     await this.usersRepository.save(user);
   
@@ -76,20 +83,25 @@ export class AuthService {
   
     // Cari toko yang terkait dengan user tersebut
     const toko = await this.tokoRepository.findOne({
-    where: { user: { id_user: user.id_user } },
-      });
+      where: { user: { id_user: user.id_user } },
+    });
+  
+    if (!toko) {
+      throw new UnauthorizedException('Toko tidak ditemukan untuk pengguna ini');
+    }
+  
     const access_token = this.jwtService.sign(payload, { expiresIn: '1h' });
   
     return {
       access_token,
-      id_user: user.id_user, // Mengembalikan id_user
-      nama: user.nama, // Mengembalikan nama
-      id_toko: toko.id_toko,// Mengembalikan id_toko
+      id_user: user.id_user,
+      nama: user.nama,
+      id_toko: toko.id_toko,  // Kirim id_toko yang terkait
       email: user.email,
     };
   }
   
-
+  
   async validateUser(token: string): Promise<User> {
     try {
       const payload = this.jwtService.verify(token);

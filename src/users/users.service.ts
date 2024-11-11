@@ -129,16 +129,16 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  async editKasir(id: string, editKasirDto: EditKasirDto): Promise<User> {
+  async editKasir(id_kasir: string, editKasirDto: EditKasirDto): Promise<User> {
     const { nama, email, status, password } = editKasirDto;
 
     // Cari user berdasarkan id
     const user = await this.usersRepository.findOne({
-      where: { id_user: id },
+      where: { id_user: id_kasir },
     });
 
     if (!user) {
-      throw new NotFoundException(`User dengan id "${id}" tidak ditemukan`);
+      throw new NotFoundException(`User dengan id "${id_kasir}" tidak ditemukan`);
     }
 
     // Update atribut user

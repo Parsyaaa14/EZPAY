@@ -92,22 +92,13 @@ export class UsersController {
     }
   }
 
-  @Get(':id')
-  async findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return {
-      data: await this.usersService.findOne(id),
-      statusCode: HttpStatus.OK,
-      message: 'success',
-    };
-  }
-
-  @Put('edit-kasir/:id')
+  @Put('edit-kasir/:id_kasir')
   async editKasir(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id_kasir', ParseUUIDPipe) id_kasir: string,
     @Body() editKasirDto: EditKasirDto,
   ): Promise<User> {
     // Panggil service untuk mengupdate kasir berdasarkan id
-    return this.usersService.editKasir(id, editKasirDto);
+    return this.usersService.editKasir(id_kasir, editKasirDto);
   }
 
   @Put('edit-admin/:id')
