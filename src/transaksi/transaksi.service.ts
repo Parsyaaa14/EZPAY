@@ -3,12 +3,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Transaksi } from './entities/transaksi.entity';
 import { GetTransaksiFilterDto } from './dto/omset.dto';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class TransaksiService {
   constructor(
     @InjectRepository(Transaksi)
     private readonly transaksiRepository: Repository<Transaksi>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
   async getTransaksi(id: string): Promise<Transaksi> {
@@ -235,6 +238,27 @@ export class TransaksiService {
     return totalHarga.total || 0;
   }
 
+  async getTransaksiByUser(id_user: string) {
+    // Cari user berdasarkan id_user untuk mendapatkan id_toko
+    const user = await this.userRepository.findOne({
+      where: { id_user },
+      relations: ['toko'], // Mengambil relasi toko dari user
+    });
+
+    if (!user || !user.toko) {
+      throw new Error('Toko tidak ditemukan untuk user ini');
+    }
+
+    const id_toko = user.toko.id_toko;
+
+    // Filter transaksi berdasarkan id_toko
+    return this.transaksiRepository.find({
+      where: { toko: { id_toko } },
+      relations: ['pesanan', 'metodeTransaksi'], // Jika perlu relasi tambahan
+    });
+  }
+}
+
   // async bayar(pesananId: string, metodeTransaksiId: string): Promise<Transaksi> {
   //   // Temukan pesanan
   //   const pesanan = await this.pesananRepository.findOne({
@@ -273,4 +297,4 @@ export class TransaksiService {
 
   //   return savedTransaksi;
   // }
-}
+
