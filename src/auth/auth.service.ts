@@ -147,6 +147,10 @@ export class AuthService {
     if (toko.status === StatusToko.REJECTED) {
       return { redirect: '/toko-rejected-page' }; // Redirect jika toko ditolak
     }
+
+    if (user.role.nama !== 'Admin') {
+      throw new UnauthorizedException('Akses ditolak: Anda bukan admin');
+    }
   
     // Generate JWT token
     const payload = {
