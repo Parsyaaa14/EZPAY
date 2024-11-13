@@ -10,9 +10,10 @@ import { MetodeTransaksi } from 'src/metode_transaksi/entities/metode_transaksi.
 import { Transaksi } from 'src/transaksi/entities/transaksi.entity';
 import { MetodeTransaksiService } from 'src/metode_transaksi/metode_transaksi.service';
 import { TransaksiService } from 'src/transaksi/transaksi.service';
+import { Toko } from 'src/toko/entities/toko.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Pesanan, DetilProdukPesanan, Produk, User, MetodeTransaksi, Transaksi])],
+  imports: [TypeOrmModule.forFeature([Pesanan, DetilProdukPesanan, Produk, User, MetodeTransaksi, Transaksi, Toko])],
   controllers: [PesananController],
   providers: [PesananService, MetodeTransaksiService, TransaksiService],
 })

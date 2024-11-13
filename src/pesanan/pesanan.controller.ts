@@ -16,8 +16,10 @@ export class PesananController {
   async createPesanan(@Body() pesananData: { 
     detil_produk_pesanan: { id_produk: string; jumlah_produk: number }[]; 
     metode_transaksi_id: string; 
-    token: string; // Token yang diterima dari permintaan
+    id_user: string; 
+    id_toko: string; // Tambahkan id_toko di sini
   }): Promise<Transaksi> {
     return this.pesananService.savePesananAndTransaction(pesananData);
   }
+  
 }

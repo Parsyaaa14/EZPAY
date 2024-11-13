@@ -26,7 +26,7 @@ export class Transaksi {
   @ManyToOne(() => User, (user) => user.transaksi, { nullable: true })
   user?: User;
 
-  @OneToOne(() => Pesanan, (pesanan) => pesanan.transaksi, { eager: true })
+  @OneToOne(() => Pesanan, (pesanan) => pesanan.transaksi)
   @JoinColumn()
   pesanan: Pesanan;
 

@@ -13,6 +13,7 @@ import { User } from '../users/entities/user.entity';
 import { Produk } from '../produk/entities/produk.entity';
 import * as jwt from 'jsonwebtoken';
 import { AuthService } from 'src/auth/auth.service';
+import { Toko } from 'src/toko/entities/toko.entity';
 
 @Injectable()
 export class PesananService {
@@ -29,62 +30,82 @@ export class PesananService {
     private readonly metodeTransaksiRepository: Repository<MetodeTransaksi>,
     @InjectRepository(Transaksi)
     private readonly transaksiRepository: Repository<Transaksi>,
+    @InjectRepository (Toko)
+    private readonly tokoRepository: Repository<Toko>,
   ) {}
+
+  private readonly jwtSecret = 'your-secret-key'; // Ganti dengan kunci rahasia yang digunakan untuk membuat token JWT
 
   async savePesananAndTransaction(pesananData: {
     detil_produk_pesanan: { id_produk: string; jumlah_produk: number }[];
     metode_transaksi_id: string;
-    token: string; // Token yang diterima dari permintaan
+    id_user: string; // ID user yang diambil dari cookies
+    id_toko: string; // ID toko yang diambil dari local storage
   }): Promise<Transaksi> {
     // Temukan metode transaksi
     const metodeTransaksi = await this.metodeTransaksiRepository.findOne({
       where: { id_metode_transaksi: pesananData.metode_transaksi_id },
     });
-
+  
     if (!metodeTransaksi) {
       throw new NotFoundException('Metode transaksi tidak ditemukan');
     }
-
-    // Temukan user dari token
-    const user = await this.getUserFromToken(pesananData.token); // Implementasi untuk mendapatkan user dari token
-
+  
+    // Temukan user berdasarkan id_user
+    const user = await this.userRepository.findOne({
+      where: { id_user: pesananData.id_user },
+    });
+  
+    if (!user) {
+      throw new NotFoundException('User  tidak ditemukan');
+    }
+  
+    // Temukan toko berdasarkan id_toko
+    const toko = await this.tokoRepository.findOne({
+      where: { id_toko: pesananData.id_toko },
+    });
+  
+    if (!toko) {
+      throw new NotFoundException('Toko tidak ditemukan');
+    }
+  
     // Buat entitas pesanan baru
     const pesanan = this.pesananRepository.create({
       user,
       total_harga_pesanan: 0, // Akan diupdate setelah detail produk disimpan
     });
-
+  
     // Simpan pesanan sementara untuk mendapatkan id
     const savedPesanan = await this.pesananRepository.save(pesanan);
-
+  
     // Simpan detail produk pesanan
     const detilProdukPesanan: DetilProdukPesanan[] = [];
     let totalHargaPesanan = 0;
     let jumlahProdukTotal = 0;
-
+  
     for (const detil of pesananData.detil_produk_pesanan) {
       const produk = await this.produkRepository.findOne({
         where: { id_produk: detil.id_produk },
       });
-
+  
       if (!produk) {
         throw new NotFoundException(`Produk dengan ID ${detil.id_produk} tidak ditemukan`);
       }
-
+  
       // Periksa apakah stok mencukupi
       if (produk.stok < detil.jumlah_produk) {
         throw new Error(`Stok produk ${produk.nama_produk} tidak mencukupi.`);
       }
-
+  
       // Kurangi stok produk sesuai jumlah yang dipesan
       produk.stok -= detil.jumlah_produk;
 
       // Simpan perubahan stok ke database
       await this.produkRepository.save(produk);
-
+  
       const totalHargaProduk = produk.harga_produk * detil.jumlah_produk;
       jumlahProdukTotal += detil.jumlah_produk;
-
+  
       // Tambahkan detail produk pesanan
       const detail = this.detilProdukPesananRepository.create({
         produk,
@@ -92,52 +113,61 @@ export class PesananService {
         total_harga_produk: totalHargaProduk,
         pesanan: savedPesanan,
       });
-
+  
       detilProdukPesanan.push(detail);
       totalHargaPesanan += totalHargaProduk;
     }
-
+  
     // Simpan detail produk pesanan
     await this.detilProdukPesananRepository.save(detilProdukPesanan);
-
+  
     // Update total harga pesanan
     savedPesanan.total_harga_pesanan = totalHargaPesanan;
-
+  
     // Simpan pesanan dengan detail produk
     await this.pesananRepository.save(savedPesanan);
-
+  
     // Setelah pesanan disimpan, buat transaksi
-    const transaksi = await this.transaksiRepository.save({
+    const transaksi = this.transaksiRepository.create({
       metodeTransaksi: [metodeTransaksi],
       totalHarga: totalHargaPesanan,
       pesanan: savedPesanan,
       user,
+      toko, // Menyimpan relasi toko
     });
-
+  
+    // Simpan transaksi ke database
+    const savedTransaksi = await this.transaksiRepository.save(transaksi);
+  
     // Menambahkan informasi jumlah produk
-    transaksi['jumlahProdukTotal'] = jumlahProdukTotal;
-
-    return transaksi;
+    savedTransaksi['jumlahProdukTotal'] = jumlahProdukTotal;
+  
+    return savedTransaksi;
   }
 
-  private async getUserFromToken(token: string): Promise<User> {
-    // Implementasi untuk memverifikasi token dan mendapatkan user
-    const decoded = await this.verifyToken(token); // Ganti dengan metode verifikasi token Anda
-    const user = await this.userRepository.findOne({ where: { id_user: decoded.id } });
+  
+  
 
-    if (!user) {
-      throw new NotFoundException('User tidak ditemukan');
-    }
+  // private async getUserFromToken(token: string): Promise<User> {
+  //   const decoded = await this.verifyToken(token);
+  //   console.log("Decoded user ID from token:", decoded.id); // Log ID user dari token
+  //   const user = await this.userRepository.findOne({ where: { id_user: decoded.id } });
+  //   if (!user) {
+  //     console.error("User  not found for ID:", decoded.id); // Log jika user tidak ditemukan
+  //     throw new NotFoundException('User  tidak ditemukan');
+  //   }
+  //   return user;
+  // }
 
-    return user;
-  }
-
-  private async verifyToken(token: string): Promise<any> {
-    try {
-      const decoded = jwt.verify(token, 'your_default_jwt_secret'); // Ganti 'secret_key' dengan kunci rahasia Anda
-      return decoded; // Pastikan bahwa ini mengembalikan objek dengan properti 'id'
-    } catch (error) {
-      throw new Error('Token tidak valid atau telah kadaluarsa');
-    }
-  }
+  // private async verifyToken(token: string): Promise<any> {
+  //   try {
+  //     console.log("Verifying token:", token); // Log token yang diterima
+  //     const decoded = jwt.verify(token, this.jwtSecret);
+  //     console.log("Decoded token:", decoded); // Log hasil decoding token
+  //     return decoded; // Pastikan bahwa objek ini berisi properti 'id'
+  //   } catch (error) {
+  //     console.error("Token verification failed:", error.message); // Log kesalahan
+  //     throw new UnauthorizedException('Token tidak valid atau telah kadaluarsa');
+  //   }
+  // }
 }
