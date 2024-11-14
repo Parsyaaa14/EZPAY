@@ -22,8 +22,10 @@ export class AuthController {
       nama: result.nama,
       id_toko: result.id_toko, // Tambahkan id_toko
       email: result.email,
+      nama_role: result.nama_role, // Tambahkan nama_role
     };
   }
+  
 
   // @Post('login/')
   // async validateToko(
@@ -44,24 +46,26 @@ export class AuthController {
   
   @Post('login/')
   async login(@Body() validateTokoDto: ValidateTokoDto) {
-    const { email, password } = validateTokoDto;
-    const result = await this.authService.validateToko(email, password);
-  
-    // Jika ada URL redirect, kirimkan URL tersebut
-    if (result.redirect) {
-      return { redirectUrl: result.redirect };
-    }
-  
-    // Jika login berhasil, kembalikan token, user ID, dan ID toko
-    return {
-      message: result.message,
-      access_token: result.access_token,
-      id_user: result.user.id_user, // Tambahkan id_user
-      nama: result.user.nama,
-      id_toko: result.id_toko, // Tambahkan id_toko
-      email: result.user.email,
-    };
+      const { email, password } = validateTokoDto;
+      const result = await this.authService.validateToko(email, password);
+    
+      // Jika ada URL redirect, kirimkan URL tersebut
+      if (result.redirect) {
+          return { redirectUrl: result.redirect };
+      }
+    
+      // Jika login berhasil, kembalikan token, user ID, ID toko, dan nama role
+      return {
+          message: result.message,
+          access_token: result.access_token,
+          id_user: result.user.id_user, // Tambahkan id_user
+          nama: result.user.nama,
+          id_toko: result.id_toko, // Tambahkan id_toko
+          email: result.user.email,
+          nama_role: result.user.nama_role // Tambahkan nama_role
+      };
   }
+  
   
 
   @Post('login/superadmin')

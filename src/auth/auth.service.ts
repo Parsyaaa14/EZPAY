@@ -29,7 +29,7 @@ export class AuthService {
   async loginForKasir(
     email: string,
     password: string,
-  ): Promise<{ access_token?: string; id_user?: string; nama?: string; id_toko?: string; email?: string }> {
+  ): Promise<{ access_token?: string; id_user?: string; nama?: string; id_toko?: string; email?: string; nama_role?: string }> {
     const user = await this.usersRepository.findOne({
       where: { email },
       relations: ['role', 'toko'],  // Pastikan relasi toko dimuat
@@ -50,6 +50,7 @@ export class AuthService {
         nama: user.nama,
         email: user.email,
         id_toko: user.toko.id_toko,  // Toko terkait dengan user
+        nama_role: user.role.nama,  // Tambahkan nama_role
       };
     }
   
@@ -98,6 +99,7 @@ export class AuthService {
       nama: user.nama,
       id_toko: toko.id_toko,  // Kirim id_toko yang terkait
       email: user.email,
+      nama_role: user.role.nama,  // Tambahkan nama_role
     };
   }
   
@@ -115,63 +117,71 @@ export class AuthService {
   }
 
   async validateToko(email: string, password: string) {
-    // Cari user berdasarkan email
-    const user = await this.usersRepository.findOne({ where: { email } });
+    // Find the user by email and include the role relationship
+    const user = await this.usersRepository.findOne({ 
+        where: { email },
+        relations: ['role'] // Include the role relation
+    });
   
     if (!user) {
-      throw new UnauthorizedException('Akun tidak ditemukan');
+        throw new UnauthorizedException('Akun tidak ditemukan');
     }
   
-    // Validasi password user
+    // Validate user's password
     const passwordIsValid = await bcrypt.compare(password, user.password);
     if (!passwordIsValid) {
-      throw new UnauthorizedException('Password salah');
+        throw new UnauthorizedException('Password salah');
     }
   
-    // Cari toko yang terkait dengan user tersebut
+    // Find the store associated with the user
     const toko = await this.tokoRepository.findOne({
-      where: { user: { id_user: user.id_user } },
+        where: { user: { id_user: user.id_user } }
     });
   
     if (!toko) {
-      throw new UnauthorizedException('Toko tidak ditemukan untuk user ini');
+        throw new UnauthorizedException('Toko tidak ditemukan untuk user ini');
     }
   
-    // Cek status toko
+    // Check the store's status
     if (toko.status === StatusToko.PENDING) {
-      throw new ForbiddenException(
-        'Akun Anda masih dalam proses persetujuan. Harap tunggu.',
-      );
+        throw new ForbiddenException(
+            'Akun Anda masih dalam proses persetujuan. Harap tunggu.'
+        );
     }
   
     if (toko.status === StatusToko.REJECTED) {
-      return { redirect: '/toko-rejected-page' }; // Redirect jika toko ditolak
+        return { redirect: '/toko-rejected-page' }; // Redirect if store is rejected
     }
 
+    // Check if the user has the role 'Admin'
     if (user.role.nama !== 'Admin') {
-      throw new UnauthorizedException('Akses ditolak: Anda bukan admin');
+        throw new UnauthorizedException('Akses ditolak: Anda bukan admin');
     }
   
     // Generate JWT token
     const payload = {
-      email: user.email,
-      sub: user.id_user,
-      id_toko: toko.id_toko, // Tambahkan id_toko ke payload JWT
-      iat: Math.floor(Date.now() / 1000),
+        email: user.email,
+        sub: user.id_user,
+        id_toko: toko.id_toko, // Add id_toko to the JWT payload
+        iat: Math.floor(Date.now() / 1000)
     };
     const access_token = this.jwtService.sign(payload);
   
-    console.log('Toko ${toko.nama_toko} berhasil login dengan status ${toko.status}');
+    console.log(`Toko ${toko.nama_toko} berhasil login dengan status ${toko.status}`);
   
-    // Kembalikan hasil login termasuk user dan id_toko
+    // Return login result including user and id_toko
     return {
-      message: 'Login berhasil',
-      access_token,
-      user: { id_user: user.id_user, email: user.email, nama: user.nama },
-      id_toko: toko.id_toko, // Kembalikan id_toko
+        message: 'Login berhasil',
+        access_token,
+        user: {
+            id_user: user.id_user,
+            email: user.email,
+            nama: user.nama,
+            nama_role: user.role.nama // Include the role name
+        },
+        id_toko: toko.id_toko // Return id_toko
     };
-  }
-  
+}
 
   // async validateToko(
   //   email: string,
@@ -234,39 +244,41 @@ export class AuthService {
   async loginForSuperadmin(
     email: string,
     password: string,
-  ): Promise<{ access_token: string }> {
+  ): Promise<{ access_token: string; nama_role: string }> {
     const user = await this.usersRepository.findOne({
       where: { email },
-      relations: ['role'], // Ensure role is loaded
+      relations: ['role'], // Ensure the 'role' relation is loaded
     });
-
+  
     if (!user) {
       throw new UnauthorizedException('Email tidak ditemukan');
     }
-
+  
     // Verifikasi password
     const isMatch = await bcrypt.compare(password, user.password);
-
+  
     if (!isMatch) {
       throw new UnauthorizedException('Password salah');
     }
-
+  
     // Cek apakah role adalah 'Superadmin'
     if (user.role.nama !== 'SuperAdmin') {
       throw new UnauthorizedException('Akses ditolak: Anda bukan Superadmin');
     }
-
+  
     // Buat payload JWT
     const payload = { email: user.email, sub: user.id_user };
-
+  
     // Generate token JWT
     const access_token = this.jwtService.sign(payload);
-
+  
     // Pengecekan tambahan jika diperlukan
     if (access_token) {
-      console.log('User ${user.email} berhasil login dengan role Superadmin.');
+      console.log(`User ${user.email} berhasil login dengan role Superadmin.`);
     }
-
-    return { access_token };
+  
+    // Return access_token dan nama_role
+    return { access_token, nama_role: user.role.nama };
   }
+  
 }
