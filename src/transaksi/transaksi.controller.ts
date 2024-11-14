@@ -10,6 +10,7 @@ import {
   Query,
   HttpException,
   HttpStatus,
+  Req,
 } from '@nestjs/common';
 import { TransaksiService } from './transaksi.service';
 import { CreateTransaksiDto } from './dto/create-transaksi.dto';
@@ -32,10 +33,6 @@ export class TransaksiController {
     return this.transaksiService.getTransaksiByUser(id_user);
   }
 
-  @Get('user/:id_user')
-  async getTransaksiByUserId(@Param('id_user') id_user: string) {
-    return this.transaksiService.findByUserId(id_user);
-  }
 
   @Get('/all')
   async getAllTransaksi(
@@ -68,6 +65,18 @@ export class TransaksiController {
     limit: number;
   }> {
     return this.transaksiService.getAllTransaksi(idToko, startDate, endDate, page, limit);
+  }
+
+  @Get(':id_user')
+  async getAllTransaksiKasirOnly(
+    @Param('id_user') id_user: string, // Ambil id_user dari URL
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    // Pastikan id_user dikirim dengan benar ke service
+    return await this.transaksiService.getAllTransaksiKasirOnly(id_user, startDate, endDate, page, limit);
   }
   
 
@@ -113,4 +122,52 @@ export class TransaksiController {
     }
     return this.transaksiService.getMonthlySales(idToko);
   }
+
+  // @Get('/ser/user/:id_user')
+  // async getTransaksiByKasir(@Param('id_user') id_user: string) {
+  //   try {
+  //     const transaksi = await this.transaksiService.getTransaksiByKasir(id_user);
+  
+  //     // Modifikasi data transaksi untuk menambahkan jumlah_produk dan metodeTransaksi
+  //     const transaksiWithDetails = transaksi.map(trans => {
+  //       let jumlah_produk = 0;
+  
+  //       // Jika pesanan adalah array
+  //       if (Array.isArray(trans.pesanan)) {
+  //         for (const pesanan of trans.pesanan) {
+  //           jumlah_produk += pesanan.jumlah; // Tambahkan jumlah dari setiap pesanan
+  //         }
+  //       } else {
+  //         // Jika pesanan adalah objek tunggal
+  //         jumlah_produk = trans.pesanan.jumlah; // Ambil jumlah dari objek pesanan
+  //       }
+  
+  //       const metodeTransaksi = trans.metodeTransaksi.map(metode => metode.nama); // Ambil nama metode transaksi
+  
+  //       return {
+  //         id_transaksi: trans.id_transaksi,
+  //         jumlah_produk,
+  //         totalHarga: trans.totalHarga,
+  //         createdAt: trans.createdAt,
+  //         metodeTransaksi,
+  //         user: {
+  //           id_user: trans.user.id_user,
+  //           nama: trans.user.nama,
+  //         },
+  //         produkDetail: trans.pesanan.map(pesanan => ({
+  //           kode_produk: pesanan.kode_produk,
+  //           nama_produk: pesanan.nama_produk,
+  //           jumlah: pesanan.jumlah,
+  //           harga: pesanan.harga,
+  //           total: pesanan.jumlah * pesanan.harga,
+  //         })),
+  //       };
+  //     });
+  
+  //     return transaksiWithDetails; // Kembalikan transaksi yang sudah dimodifikasi
+  //   } catch (error) {
+  //     console.error("Error fetching transactions:", error);
+  //     throw new BadRequestException('Gagal mengambil transaksi untuk user ini');
+  //   }
+  // }
 }
