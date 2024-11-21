@@ -107,7 +107,7 @@ export class ProdukController {
   // @Public()
   @Get('/filter-min-stok/toko/:id_toko')
   @UseGuards(JwtAuthGuard, RolesGuard) // Gunakan JwtAuthGuard untuk melindungi endpoint
-  @Roles('admin') // Menggunakan dekorator untuk role
+  @Roles('Admin') // Menggunakan dekorator untuk role
   async getFilteredProdukMinStok(@Param('id_toko') id_toko: string) {
     try {
       const produk = await this.produkService.filterProdukMinStok(id_toko);
