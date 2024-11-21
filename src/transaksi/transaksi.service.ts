@@ -56,15 +56,20 @@ export class TransaksiService {
     // Menambahkan filter berdasarkan tanggal
     if (startDate && endDate) {
       if (this.isValidDate(startDate) && this.isValidDate(endDate)) {
-        query.andWhere('transaksi.createdAt BETWEEN :startDate AND :endDate', { startDate, endDate });
+        // Mengubah startDate dan endDate untuk mencakup seluruh hari
+        const start = startOfDay(new Date(startDate));
+        const end = endOfDay(new Date(endDate));
+        query.andWhere('transaksi.createdAt BETWEEN :startDate AND :endDate', { startDate: start, endDate: end });
       }
     } else if (startDate) {
       if (this.isValidDate(startDate)) {
-        query.andWhere('transaksi.createdAt >= :startDate', { startDate });
+        const start = startOfDay(new Date(startDate));
+        query.andWhere('transaksi.createdAt >= :startDate', { startDate: start });
       }
     } else if (endDate) {
       if (this.isValidDate(endDate)) {
-        query.andWhere('transaksi.createdAt <= :endDate', { endDate });
+        const end = endOfDay(new Date(endDate));
+        query.andWhere('transaksi.createdAt <= :endDate', { endDate: end });
       }
     }
   
@@ -260,11 +265,11 @@ export class TransaksiService {
   }
 
   async getAllTransaksiKasirOnly(
-    id_user: string, // Menggunakan id_user sebagai parameter
+    id_user: string,
     startDate?: string,
     endDate?: string,
     page: number = 1,
-    limit: number = 10,
+    limit: number = 10, // Pastikan limit bisa diubah
   ): Promise<any> {
     const query = this.transaksiRepository
       .createQueryBuilder('transaksi')
@@ -273,38 +278,36 @@ export class TransaksiService {
       .leftJoinAndSelect('transaksi.metodeTransaksi', 'metodeTransaksi')
       .leftJoinAndSelect('transaksi.user', 'user')
       .leftJoinAndSelect('detilProdukPesanan.produk', 'produk')
-      .where('transaksi.user.id_user = :id_user', { id_user }) // Filter berdasarkan id_user
+      .where('transaksi.user.id_user = :id_user', { id_user })
       .orderBy('transaksi.createdAt', 'DESC');
   
-    // Menambahkan filter berdasarkan tanggal
-    if (startDate && endDate) {
-      if (this.isValidDate(startDate) && this.isValidDate(endDate)) {
-        // Mengubah startDate dan endDate untuk mencakup seluruh hari
-        const start = startOfDay(new Date(startDate));
-        const end = endOfDay(new Date(endDate));
-        query.andWhere('transaksi.createdAt BETWEEN :startDate AND :endDate', { startDate: start, endDate: end });
-      }
-    } else if (startDate) {
-      if (this.isValidDate(startDate)) {
-        const start = startOfDay(new Date(startDate));
+    // Filter tanggal (jika ada)
+    if (startDate || endDate) {
+      const start = startDate ? startOfDay(new Date(startDate)) : undefined;
+      const end = endDate ? endOfDay(new Date(endDate)) : undefined;
+  
+      if (start && end) {
+        query.andWhere('transaksi.createdAt BETWEEN :startDate AND :endDate', {
+          startDate: start,
+          endDate: end,
+        });
+      } else if (start) {
         query.andWhere('transaksi.createdAt >= :startDate', { startDate: start });
-      }
-    } else if (endDate) {
-      if (this.isValidDate(endDate)) {
-        const end = endOfDay(new Date(endDate));
+      } else if (end) {
         query.andWhere('transaksi.createdAt <= :endDate', { endDate: end });
       }
     }
   
     // Pagination
     const [transaksiList, total] = await query
-      .skip((page - 1) * limit)
-      .take(limit)
+      .skip((page - 1) * limit) // Halaman dimulai dari offset yang benar
+      .take(limit) // Ambil sesuai jumlah item per halaman
       .getManyAndCount();
   
-    return {
-      data: transaksiList.map((transaksi) => {
-        const produkDetail = transaksi.pesanan?.detilProdukPesanan?.map((detil) => ({
+    // Transform data
+    const data = transaksiList.map((transaksi) => {
+      const produkDetail =
+        transaksi.pesanan?.detilProdukPesanan?.map((detil) => ({
           kode_produk: detil.produk?.kode_produk ?? 'N/A',
           nama_produk: detil.produk?.nama_produk ?? 'N/A',
           jumlah: detil.jumlah_produk,
@@ -312,26 +315,31 @@ export class TransaksiService {
           total: detil.total_harga_produk,
         })) ?? [];
   
-        const metodeTransaksi = transaksi.metodeTransaksi?.map((metode) => metode.nama) ?? [];
+      const metodeTransaksi =
+        transaksi.metodeTransaksi?.map((metode) => metode.nama) ?? [];
   
-        return {
-          id_transaksi: transaksi.id_transaksi,
-          jumlah_produk: produkDetail.reduce((acc, item) => acc + item.jumlah, 0),
-          totalHarga: transaksi.totalHarga ?? 0,
-          createdAt: transaksi.createdAt ?? new Date(),
-          metodeTransaksi,
-          user: {
-            id_user: transaksi.user?.id_user ?? 'N/A',
-            nama: transaksi.user?.nama ?? 'N/A',
-          },
-          produkDetail,
-        };
-      }),
+      return {
+        id_transaksi: transaksi.id_transaksi,
+        jumlah_produk: produkDetail.reduce((acc, item) => acc + item.jumlah, 0),
+        totalHarga: transaksi.totalHarga ?? 0,
+        createdAt: transaksi.createdAt ?? new Date(),
+        metodeTransaksi,
+        user: {
+          id_user: transaksi.user?.id_user ?? 'N/A',
+          nama: transaksi.user?.nama ?? 'N/A',
+        },
+        produkDetail,
+      };
+    });
+  
+    return {
+      data,
       total, // Total jumlah transaksi
       page, // Halaman saat ini
       limit, // Jumlah item per halaman
     };
   }
+   
 }
 
   // async bayar(pesananId: string, metodeTransaksiId: string): Promise<Transaksi> {

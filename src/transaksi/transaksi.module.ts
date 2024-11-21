@@ -8,12 +8,15 @@ import { MetodeTransaksi } from 'src/metode_transaksi/entities/metode_transaksi.
 import { MetodeTransaksiService } from 'src/metode_transaksi/metode_transaksi.service';
 import { User } from 'src/users/entities/user.entity';
 import { DetilProdukPesanan } from 'src/detil_produk_pesanan/entities/detil_produk_pesanan.entity';
+import { JwtModule } from '@nestjs/jwt';
+import { UsersService } from 'src/users/users.service';
+import { Role } from 'src/role/entities/role.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Transaksi, Pesanan, MetodeTransaksi, User, DetilProdukPesanan]),
+    TypeOrmModule.forFeature([Transaksi, Pesanan, MetodeTransaksi, User, DetilProdukPesanan, Role]),JwtModule
   ],
   controllers: [TransaksiController],
-  providers: [TransaksiService, MetodeTransaksiService],
+  providers: [TransaksiService, MetodeTransaksiService, UsersService],
 })
 export class TransaksiModule {}
