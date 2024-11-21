@@ -32,8 +32,9 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id_user: string;
 
-  @ManyToOne(() => Role, (role) => role.user, { eager: true })
-  role: Role;
+  @ManyToOne(() => Role, (role) => role.user)
+  @JoinColumn({ name: 'id_role' })
+  role: Role; // Relasi ke entitas Role
 
   @ManyToMany(() => Produk, (produk) => produk.user)
   produk: Produk[];

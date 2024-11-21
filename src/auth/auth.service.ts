@@ -145,6 +145,17 @@ export class AuthService {
     if (!passwordIsValid) {
         throw new UnauthorizedException('Password salah');
     }
+
+    const userWithRole = await this.usersRepository.findOne({
+      where: { id_user: user.id_user },
+      relations: ['role'], // Pastikan nama relasi sesuai
+    });
+  
+    if (!userWithRole) {
+      throw new Error('User not found');
+    }
+
+
   
     // Find the store associated with the user
     const toko = await this.tokoRepository.findOne({
@@ -174,7 +185,8 @@ export class AuthService {
     // Generate JWT token
     const payload = {
         email: user.email,
-        sub: user.id_user,
+        sub: userWithRole.id_user,
+        role: userWithRole.role.nama, // Ambil nama role
         id_toko: toko.id_toko, // Add id_toko to the JWT payload
         iat: Math.floor(Date.now() / 1000)
     };

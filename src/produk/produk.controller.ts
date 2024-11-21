@@ -32,7 +32,7 @@ import { join } from 'path/posix';
 import { of } from 'rxjs';
 import { Request } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { Roles } from 'src/auth/guard/role.decorator';
+import { Roles } from 'src/auth/guard/roles.decorator';
 import { RolesGuard } from 'src/auth/guard/roles.guard';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard'; // Impor JwtAuthGuard
 
@@ -106,7 +106,7 @@ export class ProdukController {
 
   // @Public()
   @Get('/filter-min-stok/toko/:id_toko')
-  @UseGuards(JwtAuthGuard) // Gunakan JwtAuthGuard untuk melindungi endpoint
+  @UseGuards(JwtAuthGuard, RolesGuard) // Gunakan JwtAuthGuard untuk melindungi endpoint
   @Roles('admin') // Menggunakan dekorator untuk role
   async getFilteredProdukMinStok(@Param('id_toko') id_toko: string) {
     try {
