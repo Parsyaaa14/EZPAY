@@ -17,6 +17,7 @@ import {
   InternalServerErrorException,
   Res,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ProdukService } from './produk.service';
 import { CreateProdukDto } from './dto/create-produk.dto';
@@ -30,6 +31,10 @@ import * as path from 'path';
 import { join } from 'path/posix';
 import { of } from 'rxjs';
 import { Request } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { Roles } from 'src/auth/guard/role.decorator';
+import { RolesGuard } from 'src/auth/guard/roles.guard';
+import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard'; // Impor JwtAuthGuard
 
 @Controller('produk')
 export class ProdukController {
@@ -98,10 +103,11 @@ export class ProdukController {
       );
     }
   }
-  
 
   // @Public()
   @Get('/filter-min-stok/toko/:id_toko')
+  @UseGuards(JwtAuthGuard) // Gunakan JwtAuthGuard untuk melindungi endpoint
+  @Roles('admin') // Menggunakan dekorator untuk role
   async getFilteredProdukMinStok(@Param('id_toko') id_toko: string) {
     try {
       const produk = await this.produkService.filterProdukMinStok(id_toko);
@@ -134,7 +140,6 @@ export class ProdukController {
 
     return this.produkService.filterProdukByUser(id_user, sort);
   }
-
 
   @Get('count')
   async getCount(@Query('id_toko') id_toko: string): Promise<number> {

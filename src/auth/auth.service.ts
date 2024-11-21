@@ -26,6 +26,18 @@ export class AuthService {
     console.log('JWT_SECRET:', this.jwtSecret); // Log untuk memastikan JWT_SECRET terbaca
   }
 
+  async generateToken(payload: any): Promise<string> {
+    return this.jwtService.sign(payload);
+  }
+
+  async verifyToken(token: string): Promise<any> {
+    try {
+      return this.jwtService.verify(token);
+    } catch (err) {
+      throw new Error('Token tidak valid');
+    }
+  }
+
   async loginForKasir(
     email: string,
     password: string,
@@ -105,11 +117,12 @@ export class AuthService {
   
   
   async validateUser(token: string): Promise<User> {
+    const payload = this.jwtService.verify(token);
+    console.log('Payload:', payload);
     try {
-      const payload = this.jwtService.verify(token);
       // Assuming the payload has an id_user property
       return await this.usersRepository.findOne({
-        where: { id_user: payload.id_user },
+        where: { id_user: payload.sub },
       });
     } catch (error) {
       throw new UnauthorizedException('Invalid token');
@@ -182,64 +195,6 @@ export class AuthService {
         id_toko: toko.id_toko // Return id_toko
     };
 }
-
-  // async validateToko(
-  //   email: string,
-  //   password: string,
-  //   res: Response,
-  //   req: Request,
-  // ): Promise<{ message: string; access_token?: string; redirect?: string }> {
-  //   // Cari user berdasarkan email
-  //   const user = await this.usersRepository.findOne({ where: { email } });
-
-  //   if (!user) {
-  //     throw new UnauthorizedException('Akun tidak ditemukan');
-  //   }
-
-  //   // Validasi password user
-  //   const passwordIsValid = await bcrypt.compare(password, user.password);
-  //   if (!passwordIsValid) {
-  //     throw new UnauthorizedException('Password salah');
-  //   }
-
-  //   // Cari toko yang terkait dengan user tersebut
-  //   const toko = await this.tokoRepository.findOne({
-  //     where: { user: { id_user: user.id_user } },
-  //   });
-
-  //   if (!toko) {
-  //     throw new UnauthorizedException('Toko tidak ditemukan untuk user ini');
-  //   }
-
-  //   // Cek status toko
-  //   switch (toko.status) {
-  //     case StatusToko.PENDING:
-  //       throw new ForbiddenException(
-  //         'Akun Anda masih dalam proses persetujuan. Harap tunggu.',
-  //       );
-  //     case StatusToko.REJECTED:
-  //       return { message: 'Akun Anda ditolak', redirect: '/toko-rejected-page' }; // Ganti '/toko-rejected-page' dengan path yang sesuai
-  //   }
-
-  //   // Generate JWT token
-  //   const payload = {
-  //     email: user.email,
-  //     sub: user.id_user,
-  //   }; // Sub digunakan untuk menyimpan ID pengguna
-  //   const access_token = this.jwtService.sign(payload); // iat ditambahkan otomatis
-
-  //   // Menyimpan token dan informasi pengguna ke cookies
-  //   const cookies = new Cookies(req, res);
-  //   cookies.set('accessToken', access_token, { httpOnly: true }); // hapus secure: true
-  //   cookies.set('userEmail', user.email, { httpOnly: true });
-  //   cookies.set('id_user', user.id_user.toString(), { httpOnly: true });
-  //   // Logging
-  //   if (access_token) {
-  //     console.log(Toko ${toko.nama_toko} berhasil login dengan status ${toko.status});
-  //   }
-
-  //   return { message: 'Login berhasil', access_token };
-  // }
 
   async loginForSuperadmin(
     email: string,
