@@ -163,28 +163,6 @@ export class KategoriService {
     }
   }
 
-  async removeKategoriByToko(id_kategori: string, id_toko: string) {
-    try {
-      const kategori = await this.kategoriRepository.findOne({
-        where: { id_kategori, toko: { id_toko: id_toko } },
-      });
-
-      if (!kategori) {
-        throw new HttpException(
-          'Kategori tidak ditemukan untuk toko ini',
-          HttpStatus.NOT_FOUND,
-        );
-      }
-
-      await this.kategoriRepository.delete({ id_kategori });
-    } catch (error) {
-      throw new HttpException(
-        `Gagal menghapus kategori: ${error.message}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
   findAll() {
     return this.kategoriRepository.findAndCount();
   }
@@ -254,23 +232,4 @@ export class KategoriService {
     return this.kategoriRepository.findOne({ where: { nama: nama } });
   }
 
-  async remove(id: string) {
-    try {
-      await this.kategoriRepository.findOneOrFail({
-        where: { id_kategori: id },
-      });
-      await this.kategoriRepository.delete(id);
-    } catch (e) {
-      if (e instanceof EntityNotFoundError) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.NOT_FOUND,
-            error: 'Data tidak ditemukan',
-          },
-          HttpStatus.NOT_FOUND,
-        );
-      }
-      throw e;
-    }
-  }
 }

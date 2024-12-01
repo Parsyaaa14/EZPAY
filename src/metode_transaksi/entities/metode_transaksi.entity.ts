@@ -6,7 +6,6 @@ import {
   DeleteDateColumn,
   VersionColumn,
   CreateDateColumn,
-  OneToMany,
   ManyToMany,
   
 } from 'typeorm';
@@ -20,8 +19,6 @@ export class MetodeTransaksi {
 
   @ManyToMany(()=>Transaksi,(transaksi)=>transaksi.metodeTransaksi)
   transaksi:Transaksi[];
-  // @ManyToMany(() => Transaksi, (transaksi) => transaksi.metodeTransaksi)
-  // transaksi: Transaksi[];
 
   @Column({ nullable: true })
   nama: string;

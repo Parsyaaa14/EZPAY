@@ -111,13 +111,4 @@ async findByToko(@Query('id_toko') id_toko: string) {
     }
   }
   
-  @Delete(':id')
-  async remove(@Param('id', ParseUUIDPipe) id: string) {
-    await this.kategoriService.remove(id);
-
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'success',
-    };
-  }
 }

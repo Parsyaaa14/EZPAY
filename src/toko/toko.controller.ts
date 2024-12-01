@@ -68,7 +68,6 @@ export class TokoController {
     }
   }
   
-
   @Get('approved/with-user')
   async getApprovedTokoWithUser() {
     return this.tokoService.getApprovedTokoWithUser();

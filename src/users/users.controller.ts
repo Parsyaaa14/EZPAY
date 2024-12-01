@@ -44,11 +44,6 @@ export class UsersController {
     return this.usersService.tambahKasir(createUserKasirDto, idToko);
   }
 
-  @Post('tambah-admin')
-  async tambahAdmin(@Body() createUserDto: CreateUserDto): Promise<User> {
-    return this.usersService.tambahAdmin(createUserDto);
-  }
-
   @Post('tambah-superadmin')
   async tambahSuperadmin(
     @Body() CreateSuperadminDto: CreateSuperadminDto,
