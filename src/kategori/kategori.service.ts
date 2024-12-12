@@ -28,25 +28,42 @@ export class KategoriService {
     if (!uuidValidate(id_toko)) {
       throw new HttpException('ID Toko tidak valid', HttpStatus.BAD_REQUEST);
     }
-
+  
+    // Mencari toko berdasarkan id_toko
     const toko = await this.tokoRepository.findOne({ where: { id_toko } });
     if (!toko) {
       throw new HttpException('Toko tidak ditemukan', HttpStatus.NOT_FOUND);
     }
-
+  
+    // Validasi apakah nama kategori sudah ada di toko yang sama
+    const existingKategori = await this.kategoriRepository.findOne({
+      where: {
+        nama: createKategoriDto.nama,
+        toko: { id_toko },  // Pastikan kategori tersebut milik toko yang sama
+      },
+    });
+  
+    if (existingKategori) {
+      throw new HttpException('Nama kategori sudah ada', HttpStatus.BAD_REQUEST);
+    }
+  
+    // Membuat kategori baru
     const kategori = new Kategori();
     kategori.nama = createKategoriDto.nama;
     kategori.toko = toko; // Assign toko
-
+  
+    // Simpan kategori ke database
     const result = await this.kategoriRepository.insert(kategori);
-
+  
+    // Mengembalikan kategori yang baru saja disimpan
     return this.kategoriRepository.findOneOrFail({
       where: {
         id_kategori: result.identifiers[0].id,
       },
     });
   }
-
+  
+  
   async filterProdukByKategori(
     idKategori: string,
     idToko: string,
@@ -227,7 +244,6 @@ export class KategoriService {
     }
   }
   
-
   async findByName(nama: string): Promise<Kategori | null> {
     return this.kategoriRepository.findOne({ where: { nama: nama } });
   }
