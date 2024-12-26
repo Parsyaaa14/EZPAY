@@ -11,6 +11,8 @@ import { Kategori } from './entities/kategori.entity';
 import { Produk } from 'src/produk/entities/produk.entity';
 import { Toko } from 'src/toko/entities/toko.entity';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
+import { Not } from 'typeorm';
+
 
 @Injectable()
 export class KategoriService {
@@ -202,31 +204,46 @@ export class KategoriService {
       throw e;
     }
   }
-
   async updateKategori(idKategori: string, updateKategoriDto: UpdateKategoriDto): Promise<void> {
     const { namaBaru } = updateKategoriDto;
-
+  
     if (!namaBaru) {
       throw new HttpException('Nama baru tidak boleh kosong', HttpStatus.BAD_REQUEST);
     }
-
+  
     try {
+      // Mencari kategori yang ingin diupdate
       const kategori = await this.kategoriRepository.findOne({
         where: { id_kategori: idKategori },
-        relations: ['produk'],
+        relations: ['produk', 'toko'],  // Pastikan kita juga dapatkan toko dari kategori
       });
-
+  
       if (!kategori) {
         throw new HttpException('Kategori tidak ditemukan', HttpStatus.NOT_FOUND);
       }
-
+  
+      // Validasi apakah nama kategori baru sudah ada di toko yang sama
+      const existingKategori = await this.kategoriRepository.findOne({
+        where: {
+          nama: namaBaru,
+          toko: { id_toko: kategori.toko.id_toko },  // Pastikan kategori tersebut milik toko yang sama
+          id_kategori: Not(idKategori),  // Mengabaikan kategori yang sedang diupdate
+        },
+      });
+  
+      if (existingKategori) {
+        throw new HttpException('Nama kategori sudah ada di toko ini', HttpStatus.BAD_REQUEST);
+      }
+  
+      // Jika validasi berhasil, update nama kategori
       kategori.nama = namaBaru;
       await this.kategoriRepository.save(kategori);
-
+  
+      // Update produk terkait jika ada perubahan nama kategori
       const produkTerkait = await this.produkRepository.find({
         where: { kategori: { id_kategori: kategori.id_kategori } },
       });
-
+  
       await Promise.all(
         produkTerkait.map((produk) => {
           if (produk.kategori) {
