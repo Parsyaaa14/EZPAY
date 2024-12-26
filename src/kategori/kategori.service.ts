@@ -41,7 +41,7 @@ export class KategoriService {
     const existingKategori = await this.kategoriRepository.findOne({
       where: {
         nama: createKategoriDto.nama,
-        toko: { id_toko },  // Pastikan kategori tersebut milik toko yang sama
+        toko: { id_toko },
       },
     });
   
@@ -51,20 +51,20 @@ export class KategoriService {
   
     // Membuat kategori baru
     const kategori = new Kategori();
+    kategori.id_kategori = uuidv4();  // Menetapkan ID baru menggunakan UUID
     kategori.nama = createKategoriDto.nama;
     kategori.toko = toko; // Assign toko
   
     // Simpan kategori ke database
-    const result = await this.kategoriRepository.insert(kategori);
+    await this.kategoriRepository.insert(kategori);
   
-    // Mengembalikan kategori yang baru saja disimpan
-    return this.kategoriRepository.findOneOrFail({
-      where: {
-        id_kategori: result.identifiers[0].id,
-      },
-    });
+    // Mengembalikan kategori yang baru saja disimpan, termasuk id_kategori yang benar
+    return {
+      idKategori: kategori.id_kategori,
+      kategori: kategori.nama,
+      jumlahProduk: 0,  // Anda bisa mengupdate jumlahProduk dengan nilai default atau hitung nanti
+    };
   }
-  
   
   async filterProdukByKategori(
     idKategori: string,
