@@ -9,7 +9,6 @@ import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { StatusToko, Toko } from 'src/toko/entities/toko.entity';
 import * as bcrypt from 'bcrypt';
-import * as Cookies from 'cookies';
 
 @Injectable()
 export class AuthService {

@@ -30,8 +30,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { join } from 'path/posix';
 import { of } from 'rxjs';
-import { Request } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/auth/guard/roles.decorator';
 import { RolesGuard } from 'src/auth/guard/roles.guard';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard'; // Impor JwtAuthGuard
@@ -150,18 +148,16 @@ export class ProdukController {
   async getProdukByHarga(
     @Query('sort') sort: 'ASC' | 'DESC',
     @Query('id_toko') id_toko: string,
-    @Query('kategori') kategori?: string,
   ): Promise<Produk[]> {
-    return this.produkService.getProdukByHarga(sort, id_toko, kategori);
+    return this.produkService.getProdukByHarga(sort, id_toko);
   }
 
   @Get('by-stok')
   async getProdukByStok(
     @Query('sort') sort: 'ASC' | 'DESC',
     @Query('id_toko') id_toko: string,
-    @Query('id_kategori') id_kategori?: string,
   ): Promise<Produk[]> {
-    return this.produkService.getProdukByStok(sort, id_toko, id_kategori);
+    return this.produkService.getProdukByStok(sort, id_toko);
   }
 
   @Get('/aktif')
@@ -203,24 +199,6 @@ export class ProdukController {
       message: 'success',
     };
   }
-
-  // @Put(':id')
-  // // async update(
-  // //   @Param('id', ParseUUIDPipe) id: string,
-  // //   @Body() updateProdukDto: UpdateProdukDto,
-  // // ): Promise<Produk> {
-  // //   return this.produkService.update(id, updateProdukDto);
-  // // }
-  // async update(
-  //   @Param('id', ParseUUIDPipe) id: string,
-  //   @Body() updateProdukDto: UpdateProdukDto,
-  // ) {
-  //   return {
-  //     data: await this.produkService.update(id, updateProdukDto),
-  //     statusCode: HttpStatus.OK,
-  //     message: 'success',
-  //   };
-  // }
 
   @Put(':nama_produk')
   @UseInterceptors(

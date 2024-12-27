@@ -7,11 +7,6 @@ import { Transaksi } from 'src/transaksi/entities/transaksi.entity';
 export class PesananController {
   constructor(private readonly pesananService: PesananService) {}
 
-  // @Post('save')
-  // async save(@Body() pesananData: { detil_produk_pesanan: { id_produk: string; jumlah_produk: number }[]; metode_transaksi_id: string; userId?: string }): Promise<Pesanan> {
-  //   return this.pesananService.save(pesananData);
-  // }
-
   @Post()
   async createPesanan(@Body() pesananData: { 
     detil_produk_pesanan: { id_produk: string; jumlah_produk: number }[]; 

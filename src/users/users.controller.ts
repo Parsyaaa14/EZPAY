@@ -92,6 +92,12 @@ export class UsersController {
     }
   }
 
+  @Get('list-kasir')
+async listKasir(@Query('id_toko') id_toko: string) {
+  return await this.usersService.getUsersByToko(id_toko);
+}
+
+
   @Put('edit-kasir/:id_kasir')
   async editKasir(
     @Param('id_kasir', ParseUUIDPipe) id_kasir: string,

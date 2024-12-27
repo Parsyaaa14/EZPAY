@@ -144,30 +144,4 @@ export class PesananService {
   
     return savedTransaksi;
   }
-
-  
-  
-
-  // private async getUserFromToken(token: string): Promise<User> {
-  //   const decoded = await this.verifyToken(token);
-  //   console.log("Decoded user ID from token:", decoded.id); // Log ID user dari token
-  //   const user = await this.userRepository.findOne({ where: { id_user: decoded.id } });
-  //   if (!user) {
-  //     console.error("User  not found for ID:", decoded.id); // Log jika user tidak ditemukan
-  //     throw new NotFoundException('User  tidak ditemukan');
-  //   }
-  //   return user;
-  // }
-
-  // private async verifyToken(token: string): Promise<any> {
-  //   try {
-  //     console.log("Verifying token:", token); // Log token yang diterima
-  //     const decoded = jwt.verify(token, this.jwtSecret);
-  //     console.log("Decoded token:", decoded); // Log hasil decoding token
-  //     return decoded; // Pastikan bahwa objek ini berisi properti 'id'
-  //   } catch (error) {
-  //     console.error("Token verification failed:", error.message); // Log kesalahan
-  //     throw new UnauthorizedException('Token tidak valid atau telah kadaluarsa');
-  //   }
-  // }
 }

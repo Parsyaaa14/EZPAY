@@ -25,7 +25,10 @@ export class ProdukService {
     private readonly usersRepository: Repository<User>,
   ) {}
 
-  async createProduk(createProdukDto: CreateProdukDto, idToko: string): Promise<Produk> {
+  async createProduk(
+    createProdukDto: CreateProdukDto,
+    idToko: string,
+  ): Promise<Produk> {
     let kategori: Kategori;
 
     // Cari kategori berdasarkan id_kategori
@@ -78,7 +81,6 @@ export class ProdukService {
   //   }
   // }
 
-
   async filterProdukByKategori(
     id_toko: string, // Pastikan id_toko adalah parameter wajib
     id_kategori: string, // id_kategori tetap opsional jika diinginkan
@@ -99,9 +101,15 @@ export class ProdukService {
     }
   }
 
-  async filterProdukByUser(id_user: string, sort: 'ASC' | 'DESC'): Promise<Produk[]> {
+  async filterProdukByUser(
+    id_user: string,
+    sort: 'ASC' | 'DESC',
+  ): Promise<Produk[]> {
     // Mendapatkan user
-    const user = await this.usersRepository.findOne({ where: { id_user }, relations: ['toko'] });
+    const user = await this.usersRepository.findOne({
+      where: { id_user },
+      relations: ['toko'],
+    });
 
     if (!user || !user.toko) {
       throw new NotFoundException('User atau Toko tidak ditemukan');
@@ -119,53 +127,28 @@ export class ProdukService {
     return produk;
   }
 
-  // async getProdukByHarga(sort: 'ASC' | 'DESC', kategori?: string): Promise<Produk[]> {
-  //   const queryBuilder = this.produkRepository.createQueryBuilder('produk')
-  //     .orderBy('produk.harga_produk', sort);
-
-  //   if (kategori) {
-  //     queryBuilder.andWhere('produk.id_kategori = :kategori', { kategori });
-  //   }
-
-  //   return await queryBuilder.getMany();
-  // }
-
   async getProdukByHarga(
     sort: 'ASC' | 'DESC',
     id_toko: string, // Tambahkan parameter id_toko
-    kategori?: string,
   ): Promise<Produk[]> {
     const queryBuilder = this.produkRepository
       .createQueryBuilder('produk')
-      .leftJoinAndSelect('produk.kategori', 'kategori') // Menggabungkan entitas kategori
       .where('produk.toko_id_toko = :id_toko', { id_toko }) // Menambahkan filter berdasarkan id_toko
       .orderBy('produk.harga_produk', sort);
-  
-    if (kategori) {
-      queryBuilder.andWhere('kategori.nama = :kategori', { kategori }); // Gunakan nama kolom yang benar dari entitas Kategori
-    }
-  
+
     return await queryBuilder.getMany();
   }
 
   async getProdukByStok(
     sort: 'ASC' | 'DESC',
     id_toko: string,
-    id_kategori?: string,
   ): Promise<Produk[]> {
     const queryBuilder = this.produkRepository
       .createQueryBuilder('produk')
-      .leftJoinAndSelect('produk.kategori', 'kategori') // Menggabungkan entitas kategori
       .where('produk.toko_id_toko = :id_toko', { id_toko }) // Menambahkan filter berdasarkan id_toko
       .orderBy('produk.stok', sort);
-  
-    if (id_kategori) {
-      queryBuilder.andWhere('produk.id_kategori = :id_kategori', { id_kategori }); // Menggunakan ID kategori
-    }
-  
     return await queryBuilder.getMany();
   }
-  
 
   async findAll() {
     return this.produkRepository.findAndCount({
@@ -173,20 +156,23 @@ export class ProdukService {
     });
   }
 
-  async findAllAktif(status?: StatusProduk, id_toko?: string): Promise<Produk[]> {
+  async findAllAktif(
+    status?: StatusProduk,
+    id_toko?: string,
+  ): Promise<Produk[]> {
     const queryBuilder = this.produkRepository.createQueryBuilder('produk');
-  
+
     if (id_toko) {
       queryBuilder.andWhere('produk.toko.id_toko = :id_toko', { id_toko });
     }
-  
+
     if (status) {
       queryBuilder.andWhere('produk.status_produk = :status', { status });
     }
-  
+
     return await queryBuilder.getMany();
   }
-  
+
   async searchProduk(nama_produk: string, id_toko: string): Promise<Produk[]> {
     return await this.produkRepository
       .createQueryBuilder('produk')
@@ -275,23 +261,20 @@ export class ProdukService {
       .where('toko.id_toko = :id_toko', { id_toko }) // Hanya kondisi untuk toko
       .getMany();
   }
-  
-  
 
   async filterProdukMinStok(id_toko: string): Promise<Produk[]> {
-    // Query untuk mendapatkan produk dengan stok lebih dari 0, diurutkan dari stok terkecil
+    // Query untuk mendapatkan produk dengan stok > 0 dan < 10, diurutkan dari stok terkecil
     const produk = await this.produkRepository
       .createQueryBuilder('produk')
       .innerJoin('produk.toko', 'toko') // Menggunakan inner join untuk menghubungkan produk dengan toko
       .where('produk.stok > 0')
+      .andWhere('produk.stok < 10') // Filter stok di bawah 10
       .andWhere('toko.id_toko = :id_toko', { id_toko }) // Filter berdasarkan id_toko dari relasi
-      .orderBy('produk.stok', 'ASC')
-      .limit(2)
+      .orderBy('produk.stok', 'ASC') // Urutkan stok dari terkecil
       .getMany();
-  
+
     return produk;
   }
-  
 
   async remove(id: string) {
     try {

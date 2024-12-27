@@ -18,7 +18,6 @@ import { TokoModule } from './toko/toko.module';
 import { MetodeTransaksiModule } from './metode_transaksi/metode_transaksi.module';
 import { DetilProdukPesananModule } from './detil_produk_pesanan/detil_produk_pesanan.module';
 import { AuthModule } from './auth/auth.module';
-import { User } from './users/entities/user.entity';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 

@@ -129,6 +129,14 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
+  async getUsersByToko(id_toko: string): Promise<User[]> {
+    return await this.usersRepository.find({
+      where: { toko: { id_toko } },
+      select: ['id_user', 'nama'], // Ambil hanya ID dan nama
+    });
+  }
+  
+
   async editKasir(id_kasir: string, editKasirDto: EditKasirDto): Promise<User> {
     const { nama, email, status, password } = editKasirDto;
 
