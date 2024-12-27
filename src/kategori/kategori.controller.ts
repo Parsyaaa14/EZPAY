@@ -30,10 +30,8 @@ export class KategoriController {
     @Body() createKategoriDto: CreateKategoriDto,
     @Query('id_toko') id_toko: string,
   ) {
-    const kategori = await this.kategoriService.create(
-      createKategoriDto,
-      id_toko,
-    );
+    const kategori = await this.kategoriService.create(createKategoriDto, id_toko);
+  
     return {
       data: kategori,
       statusCode: HttpStatus.CREATED,
@@ -41,7 +39,6 @@ export class KategoriController {
     };
   }
   
-
   @Get('by-kategori')
   async filterProdukByKategori(
     @Query('id_kategori') idKategori: string,
@@ -111,13 +108,4 @@ async findByToko(@Query('id_toko') id_toko: string) {
     }
   }
   
-  @Delete(':id')
-  async remove(@Param('id', ParseUUIDPipe) id: string) {
-    await this.kategoriService.remove(id);
-
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'success',
-    };
-  }
 }

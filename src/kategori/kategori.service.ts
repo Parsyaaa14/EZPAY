@@ -11,6 +11,8 @@ import { Kategori } from './entities/kategori.entity';
 import { Produk } from 'src/produk/entities/produk.entity';
 import { Toko } from 'src/toko/entities/toko.entity';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
+import { Not } from 'typeorm';
+
 
 @Injectable()
 export class KategoriService {
@@ -28,25 +30,42 @@ export class KategoriService {
     if (!uuidValidate(id_toko)) {
       throw new HttpException('ID Toko tidak valid', HttpStatus.BAD_REQUEST);
     }
-
+  
+    // Mencari toko berdasarkan id_toko
     const toko = await this.tokoRepository.findOne({ where: { id_toko } });
     if (!toko) {
       throw new HttpException('Toko tidak ditemukan', HttpStatus.NOT_FOUND);
     }
-
-    const kategori = new Kategori();
-    kategori.nama = createKategoriDto.nama;
-    kategori.toko = toko; // Assign toko
-
-    const result = await this.kategoriRepository.insert(kategori);
-
-    return this.kategoriRepository.findOneOrFail({
+  
+    // Validasi apakah nama kategori sudah ada di toko yang sama
+    const existingKategori = await this.kategoriRepository.findOne({
       where: {
-        id_kategori: result.identifiers[0].id,
+        nama: createKategoriDto.nama,
+        toko: { id_toko },
       },
     });
+  
+    if (existingKategori) {
+      throw new HttpException('Nama kategori sudah ada', HttpStatus.BAD_REQUEST);
+    }
+  
+    // Membuat kategori baru
+    const kategori = new Kategori();
+    kategori.id_kategori = uuidv4();  // Menetapkan ID baru menggunakan UUID
+    kategori.nama = createKategoriDto.nama;
+    kategori.toko = toko; // Assign toko
+  
+    // Simpan kategori ke database
+    await this.kategoriRepository.insert(kategori);
+  
+    // Mengembalikan kategori yang baru saja disimpan, termasuk id_kategori yang benar
+    return {
+      idKategori: kategori.id_kategori,
+      kategori: kategori.nama,
+      jumlahProduk: 0,  // Anda bisa mengupdate jumlahProduk dengan nilai default atau hitung nanti
+    };
   }
-
+  
   async filterProdukByKategori(
     idKategori: string,
     idToko: string,
@@ -163,28 +182,6 @@ export class KategoriService {
     }
   }
 
-  async removeKategoriByToko(id_kategori: string, id_toko: string) {
-    try {
-      const kategori = await this.kategoriRepository.findOne({
-        where: { id_kategori, toko: { id_toko: id_toko } },
-      });
-
-      if (!kategori) {
-        throw new HttpException(
-          'Kategori tidak ditemukan untuk toko ini',
-          HttpStatus.NOT_FOUND,
-        );
-      }
-
-      await this.kategoriRepository.delete({ id_kategori });
-    } catch (error) {
-      throw new HttpException(
-        `Gagal menghapus kategori: ${error.message}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
   findAll() {
     return this.kategoriRepository.findAndCount();
   }
@@ -207,31 +204,46 @@ export class KategoriService {
       throw e;
     }
   }
-
   async updateKategori(idKategori: string, updateKategoriDto: UpdateKategoriDto): Promise<void> {
     const { namaBaru } = updateKategoriDto;
-
+  
     if (!namaBaru) {
       throw new HttpException('Nama baru tidak boleh kosong', HttpStatus.BAD_REQUEST);
     }
-
+  
     try {
+      // Mencari kategori yang ingin diupdate
       const kategori = await this.kategoriRepository.findOne({
         where: { id_kategori: idKategori },
-        relations: ['produk'],
+        relations: ['produk', 'toko'],  // Pastikan kita juga dapatkan toko dari kategori
       });
-
+  
       if (!kategori) {
         throw new HttpException('Kategori tidak ditemukan', HttpStatus.NOT_FOUND);
       }
-
+  
+      // Validasi apakah nama kategori baru sudah ada di toko yang sama
+      const existingKategori = await this.kategoriRepository.findOne({
+        where: {
+          nama: namaBaru,
+          toko: { id_toko: kategori.toko.id_toko },  // Pastikan kategori tersebut milik toko yang sama
+          id_kategori: Not(idKategori),  // Mengabaikan kategori yang sedang diupdate
+        },
+      });
+  
+      if (existingKategori) {
+        throw new HttpException('Nama kategori sudah ada di toko ini', HttpStatus.BAD_REQUEST);
+      }
+  
+      // Jika validasi berhasil, update nama kategori
       kategori.nama = namaBaru;
       await this.kategoriRepository.save(kategori);
-
+  
+      // Update produk terkait jika ada perubahan nama kategori
       const produkTerkait = await this.produkRepository.find({
         where: { kategori: { id_kategori: kategori.id_kategori } },
       });
-
+  
       await Promise.all(
         produkTerkait.map((produk) => {
           if (produk.kategori) {
@@ -249,28 +261,8 @@ export class KategoriService {
     }
   }
   
-
   async findByName(nama: string): Promise<Kategori | null> {
     return this.kategoriRepository.findOne({ where: { nama: nama } });
   }
 
-  async remove(id: string) {
-    try {
-      await this.kategoriRepository.findOneOrFail({
-        where: { id_kategori: id },
-      });
-      await this.kategoriRepository.delete(id);
-    } catch (e) {
-      if (e instanceof EntityNotFoundError) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.NOT_FOUND,
-            error: 'Data tidak ditemukan',
-          },
-          HttpStatus.NOT_FOUND,
-        );
-      }
-      throw e;
-    }
-  }
 }

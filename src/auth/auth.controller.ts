@@ -25,25 +25,7 @@ export class AuthController {
       nama_role: result.nama_role, // Tambahkan nama_role
     };
   }
-  
 
-  // @Post('login/')
-  // async validateToko(
-  //   @Body() validateTokoDto: ValidateTokoDto,
-  //   @Res() res: Response,
-  //   @Req() req: Request,
-  // ) {
-  //   const { email, password } = validateTokoDto;
-
-  //   const result = await this.authService.validateToko(email, password, res, req); // Kirim res
-
-  //   if (result.redirect) {
-  //     return { redirectUrl: result.redirect }; // Jika toko ditolak, berikan URL redirect ke frontend
-  //   }
-
-  //   return result; // Jika login berhasil atau status pending
-  // }
-  
   @Post('login/')
   async login(@Body() validateTokoDto: ValidateTokoDto) {
       const { email, password } = validateTokoDto;
